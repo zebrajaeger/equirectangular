@@ -7,8 +7,6 @@ import java.util.Arrays;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
-import org.im4java.core.IM4JavaException;
-
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
 import de.zebrajaeger.equirectangular.psd.PsdImg;
 import de.zebrajaeger.equirectangular.util.ZJFileUtils;
@@ -19,7 +17,7 @@ public class App {
 
   // http://www.fileformat.info/format/psd/egff.htm
 
-  public static void main(String[] args2) throws IOException, InterruptedException, IM4JavaException {
+  public static void main(String[] args2) throws IOException, InterruptedException {
 
     final String in =
         "C:\\temp\\im\\(IMG_0833-IMG_0836-4)-{d=S-80.84x53.86(-8.27)}-{p=IMG_0833_IMG_0836-4 (2009-08-04)}.psd";
