@@ -5,9 +5,13 @@ import java.nio.charset.StandardCharsets;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.xml.sax.SAXException;
+
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
 public class PsdImageResourceBlock implements IPsdMetaDataPart {
 
@@ -20,7 +24,6 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
 
   @Override
   public long read(FileImageInputStream is) throws IOException {
-    // System.out.println("#### DEBUG start stream at: " + is.getStreamPosition());
     long res = 0;
 
     this.signature = new byte[4];
@@ -41,7 +44,6 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
     res += data.length;
 
     decodeData();
-    // System.out.println("#### DEBUG END stream at: " + is.getStreamPosition());
     return res;
   }
 
@@ -51,10 +53,17 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
       // decodedData = new String(data, StandardCharsets.US_ASCII);
     }
     if (uid == 1060) {
-      // XMP
+      // XMP see http://www.w3.org/RDF/Validator/
       decodedData = new String(data, StandardCharsets.US_ASCII);
+      try {
+        final GPanoData gPanoData = new GPanoData();
+        decodedData = gPanoData;
+        gPanoData.parse(data);
+      } catch (final SAXException | IOException | ParserConfigurationException e) {
+        // TODO LOG me
+        e.printStackTrace();
+      }
     }
-
   }
 
   @Override
@@ -64,6 +73,30 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
     name.write(os);
     os.writeInt(size);
     os.write(data);
+  }
+
+  public byte[] getSignature() {
+    return this.signature;
+  }
+
+  public short getUid() {
+    return this.uid;
+  }
+
+  public PascalString getName() {
+    return this.name;
+  }
+
+  public int getSize() {
+    return this.size;
+  }
+
+  public byte[] getData() {
+    return this.data;
+  }
+
+  public Object getDecodedData() {
+    return this.decodedData;
   }
 
   @Override

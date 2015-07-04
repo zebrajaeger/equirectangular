@@ -52,7 +52,6 @@ public class PsdImg {
 
     imageResourceSection = new PsdImageResourceSection();
     imageResourceSection.read(is);
-    System.out.println("####debug: streampos after PsdImageResourceSection: " + is.getStreamPosition());
 
     layerAndMask = new PsdLayerAndMaskInformation(header.getVersion());
     layerAndMask.read(is);

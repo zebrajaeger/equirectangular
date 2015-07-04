@@ -1,18 +1,21 @@
 package de.zebrajaeger.equirectangular.psd;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
-import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
 public class PsdImageResourceSection implements IPsdMetaDataPart {
 
   private int size = 0;
-  private byte[] data = new byte[0];
+  private final LinkedList<PsdImageResourceBlock> blocks = new LinkedList<>();
+
+  // private byte[] data = new byte[0];
 
   public PsdImageResourceSection() {
 
@@ -20,7 +23,7 @@ public class PsdImageResourceSection implements IPsdMetaDataPart {
 
   public PsdImageResourceSection(PsdImageResourceSection source) {
     this.size = source.size;
-    this.data = ZJArrayUtils.copy(source.data);
+    // this.data = ZJArrayUtils.copy(source.data);
   }
 
   @Override
@@ -29,35 +32,40 @@ public class PsdImageResourceSection implements IPsdMetaDataPart {
     size = is.readInt();
     res += 4;
 
-
     if (size > 0) {
-      System.out.println("##### DEBUG size:" + size);
       long temp = 1;
       for (; temp < size;) {
         final PsdImageResourceBlock irb = new PsdImageResourceBlock();
         final long bytes = irb.read(is);
-        System.out.println("------------------------------");
-        System.out.println(irb);
-        System.out.println("------------------------------");
-        System.out.println("##### DEBUG ridden:" + temp);
+        blocks.add(irb);
         res += bytes;
         temp += bytes;
-        System.out.println("##### DEBUG temp is:" + temp);
       }
     }
-
-
-    // data = new byte[size];
-    // is.read(data);
-    // res += data.length;
 
     return res;
   }
 
   @Override
   public void write(FileImageOutputStream os) throws IOException {
-    os.writeInt(data.length);
-    os.write(data);
+    int size = 0;
+    for (final PsdImageResourceBlock b : blocks) {
+      size += b.getSize();
+    }
+    os.writeInt(size);
+
+    for (final PsdImageResourceBlock b : blocks) {
+      b.write(os);
+    }
+  }
+
+  public GPanoData getGPanoData() {
+    for (final PsdImageResourceBlock b : blocks) {
+      if (b.getDecodedData() instanceof GPanoData) {
+        return (GPanoData) b.getDecodedData();
+      }
+    }
+    return null;
   }
 
   @Override

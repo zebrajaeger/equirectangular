@@ -3,6 +3,8 @@ package de.zebrajaeger.equirectangular;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
+
 public class PanoComputer {
   private int source_w = 0;
   private double source_w_deg = 0;
@@ -23,22 +25,48 @@ public class PanoComputer {
   }
 
   public PanoComputer(int src_w, int src_h, double src_w_deg, double src_y_off_deg) {
-    source_w = src_w;
-    source_h = src_h;
-    source_w_deg = src_w_deg;
-    source_off_y_deg = src_y_off_deg;
+    this.source_w = src_w;
+    this.source_h = src_h;
+    this.source_w_deg = src_w_deg;
+    this.source_off_y_deg = src_y_off_deg;
 
-    target_w = (int) ((360.0 * src_w) / src_w_deg);
-    target_h = target_w / 2;
+    this.target_w = (int) ((360.0 * src_w) / src_w_deg);
+    this.target_h = target_w / 2;
 
-    source_h_deg = ((source_h) * 180.0) / target_h;
+    this.source_h_deg = ((source_h) * 180.0) / target_h;
 
-    source_off_x = (target_w - source_w) / 2;
-    source_off_y = (target_h - source_h) / 2;
-    source_off_y_top = source_off_y;
-    source_off_y_top += (int) ((src_y_off_deg * target_h) / 180);
+    this.source_off_x = (target_w - source_w) / 2;
+    this.source_off_y = (target_h - source_h) / 2;
+    this.source_off_y_top = source_off_y;
+    this.source_off_y_top += (int) ((src_y_off_deg * target_h) / 180);
 
-    source_off_y_bot = target_h - source_off_y_top - source_h;
+    this.source_off_y_bot = target_h - source_off_y_top - source_h;
+  }
+
+  public PanoComputer(GPanoData pd) {
+    this(pd.getFullPanoWidthPixels(), pd.getFullPanoHeightPixels(), pd.getCroppedAreaImageWidthPixels(), pd
+        .getCroppedAreaImageHeightPixels(), pd.getCroppedAreaLeftPixels(), pd.getCroppedAreaTopPixels());
+  }
+
+  public PanoComputer(int target_w, int target_h, int src_w, int src_h, int src_off_x, int src_off_y) {
+    this.source_w = src_w;
+    this.source_h = src_h;
+    this.source_w_deg = (360.0 * src_w) / target_w;
+
+
+    this.target_w = target_w;
+    this.target_h = target_h;
+
+    this.source_h_deg = (180.0 * src_h) / target_h;
+
+    this.source_off_x = (target_w - source_w) / 2;
+    this.source_off_y = (target_h - src_h) / 2;
+    this.source_off_y_bot = src_off_y;
+    final double src_h_middle_off = (target_h - src_h) / 2;
+    final double src_h_middle_off_diff = src_h_middle_off - source_off_y_top;
+    this.source_off_y_deg = (180.0 * src_h_middle_off_diff) / target_h;
+
+    this.source_off_y_top = target_h - source_off_y_bot - source_h;
   }
 
   public int getSource_w() {

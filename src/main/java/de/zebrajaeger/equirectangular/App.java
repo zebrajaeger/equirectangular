@@ -3,10 +3,12 @@ package de.zebrajaeger.equirectangular;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
 import de.zebrajaeger.equirectangular.psd.PsdImg;
 import de.zebrajaeger.equirectangular.util.ZJFileUtils;
@@ -17,18 +19,58 @@ public class App {
 
   // http://www.fileformat.info/format/psd/egff.htm
 
-  public static void main(String[] args2) throws IOException, InterruptedException {
-    final boolean dryRun = true;
+  public static void main(String[] args) throws IOException, InterruptedException {
+    final boolean dryRun = false;
 
-    final String in =
-        "C:\\temp\\im\\(IMG_0833-IMG_0836-4)-{d=S-80.84x53.86(-8.27)}-{p=IMG_0833_IMG_0836-4 (2009-08-04)}.psd";
-    final String out = "R:/temp/testout.psd";
-    final File inFile = new File(in);
+    if (args.length == 0) {
+      printUsage();
+      System.exit(-1);
+    }
+
+    final LinkedList<File> images = new LinkedList<>();
+    for (final String arg : args) {
+      if (!arg.startsWith("-")) {
+        final File f = new File(arg);
+        if (!f.exists()) {
+          final String msg = String.format("could not found image '%s'", f.getAbsolutePath());
+          throw new IllegalArgumentException(msg);
+        };
+        images.add(f);
+      } else {
+        // still no option support
+      }
+    }
+
+    if (images.isEmpty()) {
+      final String msg = "No images given";
+      throw new IllegalArgumentException(msg);
+    }
+
+    if (images.size() > 1) {
+      final String msg = "still only one image per call supported";
+      throw new IllegalArgumentException(msg);
+    }
+
+    final File in = images.get(0);
+    String n = in.getName();
+    final int pos = n.lastIndexOf('.');
+    if (pos == -1) {
+      final String msg = "image has no extension";
+      throw new IllegalArgumentException(msg);
+    }
+
+    final String ext = n.substring(pos);
+    n = n.substring(0, pos);
+    n = n + "_out" + ext;
+
+    final File out = new File(in.getParent(), n);
+
+    final File inFile = in;
     if (!inFile.exists()) {
       throw new IllegalArgumentException(String.format("Image '%s' does not exist", inFile.getAbsolutePath()));
     }
 
-    final File outFile = new File(out);
+    final File outFile = out;
 
     if (outFile.exists()) {
       System.out.println(String.format("Delete file '%s'", outFile.getAbsolutePath()));
@@ -57,11 +99,20 @@ public class App {
       final int source_h = source.getHeader().getRows();
       System.out.println(String.format("source x:%s, y:%s", source_w, source_h));
 
-      final double source_w_deg = 80.84;
-      // final double source_h_deg = 53.86;
-      final double source_ho_deg = -8.27;
 
-      final PanoComputer pc = new PanoComputer(source_w, source_h, source_w_deg, source_ho_deg);
+      // final double source_w_deg = 80.84;
+      // // final double source_h_deg = 53.86;
+      // final double source_ho_deg = -8.27;
+      //
+      // final PanoComputer pc = new PanoComputer(source_w, source_h, source_w_deg, source_ho_deg);
+
+      final GPanoData panoData = source.getImageResourceSection().getGPanoData();
+      if (panoData == null) {
+        throw new IllegalArgumentException(
+            "can not compute new image, cause ther is no gpanodata in xmp section available");
+      }
+      final PanoComputer pc = new PanoComputer(panoData);
+
       System.out.println("\n#### COMPUTED VALUES ####");
       System.out.println(pc);
 
@@ -97,6 +148,11 @@ public class App {
       System.out.println("\n#### KRPANO XML SNIPPET ####");
       System.out.println(pc.krPanoSnippt());
     }
+  }
+
+  private static void printUsage() {
+    System.out.println("printUsage()");
+    // TODO implement printUsage
   }
 
   private static void copyLines(byte[] buffer, PsdImageData source, PsdImageData target, byte spaceValue, int targetW,
