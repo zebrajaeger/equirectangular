@@ -6,7 +6,7 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
 public interface IPsdMetaDataPart {
-  void read(FileImageInputStream is) throws IOException;
+  long read(FileImageInputStream is) throws IOException;
 
   void write(FileImageOutputStream os) throws IOException;
 }

@@ -12,6 +12,13 @@ import de.zebrajaeger.equirectangular.psd.PsdHeader.MODE;
 import de.zebrajaeger.equirectangular.psd.PsdHeader.VERSION;
 import de.zebrajaeger.equirectangular.psd.PsdImageData.TYPE;
 
+
+/**
+ * see https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
+ * 
+ * @author Lars Brandt
+ *
+ */
 public class PsdImg {
 
   private PsdHeader header;
@@ -45,6 +52,7 @@ public class PsdImg {
 
     imageResourceSection = new PsdImageResourceSection();
     imageResourceSection.read(is);
+    System.out.println("####debug: streampos after PsdImageResourceSection: " + is.getStreamPosition());
 
     layerAndMask = new PsdLayerAndMaskInformation(header.getVersion());
     layerAndMask.read(is);

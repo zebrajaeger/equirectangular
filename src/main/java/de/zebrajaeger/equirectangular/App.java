@@ -18,6 +18,7 @@ public class App {
   // http://www.fileformat.info/format/psd/egff.htm
 
   public static void main(String[] args2) throws IOException, InterruptedException {
+    final boolean dryRun = true;
 
     final String in =
         "C:\\temp\\im\\(IMG_0833-IMG_0836-4)-{d=S-80.84x53.86(-8.27)}-{p=IMG_0833_IMG_0836-4 (2009-08-04)}.psd";
@@ -29,18 +30,22 @@ public class App {
 
     final File outFile = new File(out);
 
-    // TODO DEBUG, remove me
     if (outFile.exists()) {
       System.out.println(String.format("Delete file '%s'", outFile.getAbsolutePath()));
-      outFile.delete();
+      if (!dryRun) {
+        outFile.delete();
+      }
     }
 
-    if (outFile.exists()) {
-      throw new IllegalArgumentException(String.format("Image '%s' already exist", inFile.getAbsolutePath()));
+    if (!dryRun) {
+      if (outFile.exists()) {
+        throw new IllegalArgumentException(String.format("Image '%s' already exist", inFile.getAbsolutePath()));
+      }
     }
 
     try (FileImageInputStream is = new FileImageInputStream(inFile);
         FileImageOutputStream os = new FileImageOutputStream(outFile)) {
+
 
       // create source image
       final PsdImg source = new PsdImg();
@@ -57,32 +62,36 @@ public class App {
       final double source_ho_deg = -8.27;
 
       final PanoComputer pc = new PanoComputer(source_w, source_h, source_w_deg, source_ho_deg);
-      System.out.println("\n#### COMPUTET VALUES ####");
+      System.out.println("\n#### COMPUTED VALUES ####");
       System.out.println(pc);
 
       // create target image
       final PsdImg target = new PsdImg(source);
       target.getHeader().setColumns(pc.getTarget_w());
       target.getHeader().setRows(pc.getTarget_h());
-      target.prepareWrite(os);
+      if (!dryRun) {
+        target.prepareWrite(os);
+      }
       System.out.println("\n#### TARGET IMAGE ####");
       System.out.println(target);
 
       final int lineSize = target.getHeader().getColumns();
       final int imgSize = target.getHeader().getRows() * target.getHeader().getPixelSize() * lineSize;
-      System.out.println(String.format("resultimgSize = %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
+      System.out.println(String.format("resultimgSize ~ %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
 
       final byte[] buffer = new byte[lineSize];
       System.out.println(String.format("Linebuffer.length=%s", buffer.length));
 
       final int channels = target.getHeader().getChannels();
-      for (int i = 1; i <= channels; ++i) {
-        final byte spaceValue = (byte) ((i == channels) ? 255 : 0);
-        System.out.println(String.format("WRITE LAYER %s with space %s", i, spaceValue));
-        writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_top());
-        copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, pc.getTarget_w(), pc.getSource_off_x(),
-            pc.getSource_w(), pc.getSource_h());
-        writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_bot());
+      if (!dryRun) {
+        for (int i = 1; i <= channels; ++i) {
+          final byte spaceValue = (byte) ((i == channels) ? 255 : 0);
+          System.out.println(String.format("WRITE LAYER %s with space %s", i, spaceValue));
+          writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_top());
+          copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, pc.getTarget_w(),
+              pc.getSource_off_x(), pc.getSource_w(), pc.getSource_h());
+          writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_bot());
+        }
       }
 
       System.out.println("\n#### KRPANO XML SNIPPET ####");
@@ -90,7 +99,6 @@ public class App {
     }
   }
 
-  // 3573 + 3511 + 8163 = 15247
   private static void copyLines(byte[] buffer, PsdImageData source, PsdImageData target, byte spaceValue, int targetW,
       int offX, int srcW, int srcH) throws IOException {
     System.out.println(String.format("write COPY LINES: %s (start: %s)", srcH, offX));
@@ -109,8 +117,6 @@ public class App {
     // copy content lines
     for (int i = 0; i < srcH; ++i) {
       source.read(buffer, offX, srcW);
-      final int v = buffer[offX];
-      // System.out.print((v & 0xff) + ", ");
       target.write(buffer);
     }
   }

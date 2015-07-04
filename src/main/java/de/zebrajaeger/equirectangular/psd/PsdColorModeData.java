@@ -25,10 +25,18 @@ public class PsdColorModeData implements IPsdMetaDataPart {
   }
 
   @Override
-  public void read(FileImageInputStream is) throws IOException {
+  public long read(FileImageInputStream is) throws IOException {
+    long res = 0;
+
     length = is.readInt();
+    res += 4;
+
     colorData = new byte[length];
     is.read(colorData);
+
+    res += colorData.length;
+
+    return res;
   }
 
   @Override

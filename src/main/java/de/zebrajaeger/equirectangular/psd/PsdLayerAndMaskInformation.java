@@ -29,11 +29,15 @@ public class PsdLayerAndMaskInformation implements IPsdMetaDataPart {
   }
 
   @Override
-  public void read(FileImageInputStream is) throws IOException {
+  public long read(FileImageInputStream is) throws IOException {
+    long res = 0;
+
     if (version.equals(PsdHeader.VERSION.PSD)) {
       size = is.readInt();
+      res += 4;
     } else if (version.equals(PsdHeader.VERSION.PSB)) {
       size = is.readLong();
+      res += 8;
     }
 
     if (size > Integer.MAX_VALUE) {
@@ -46,6 +50,9 @@ public class PsdLayerAndMaskInformation implements IPsdMetaDataPart {
 
     data = new byte[(int) size];
     is.read(data);
+    res += data.length;
+
+    return res;
   }
 
   @Override

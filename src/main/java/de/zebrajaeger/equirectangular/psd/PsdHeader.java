@@ -104,18 +104,36 @@ public class PsdHeader implements IPsdMetaDataPart {
   }
 
   @Override
-  public void read(FileImageInputStream is) throws IOException {
+  public long read(FileImageInputStream is) throws IOException {
+    long res = 0;
+
     final byte[] temp = new byte[4];
     is.read(temp);
     signature = new String(temp);
+    res += 4;
 
     version = VERSION.get(is.readShort());
+    res += 2;
+
     is.read(reserved);
+    res += reserved.length;
+
     channels = is.readShort();
+    res += 2;
+
     rows = is.readInt();
+    res += 4;
+
     columns = is.readInt();
+    res += 4;
+
     depth = is.readShort();
+    res += 2;
+
     mode = MODE.get(is.readShort());
+    res += 2;
+
+    return res;
   }
 
   @Override

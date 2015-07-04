@@ -24,11 +24,34 @@ public class PsdImageResourceSection implements IPsdMetaDataPart {
   }
 
   @Override
-  public void read(FileImageInputStream is) throws IOException {
+  public long read(FileImageInputStream is) throws IOException {
+    long res = 0;
     size = is.readInt();
+    res += 4;
 
-    data = new byte[size];
-    is.read(data);
+
+    if (size > 0) {
+      System.out.println("##### DEBUG size:" + size);
+      long temp = 1;
+      for (; temp < size;) {
+        final PsdImageResourceBlock irb = new PsdImageResourceBlock();
+        final long bytes = irb.read(is);
+        System.out.println("------------------------------");
+        System.out.println(irb);
+        System.out.println("------------------------------");
+        System.out.println("##### DEBUG ridden:" + temp);
+        res += bytes;
+        temp += bytes;
+        System.out.println("##### DEBUG temp is:" + temp);
+      }
+    }
+
+
+    // data = new byte[size];
+    // is.read(data);
+    // res += data.length;
+
+    return res;
   }
 
   @Override
