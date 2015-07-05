@@ -21,7 +21,7 @@
 	<developers>
 		<developer>
 			<name>Lars Brandt</name>
-			<email>zebrajager@github.com</email>
+			<email>zebrajaeger@github.com</email>
 		</developer>
 	</developers>
 
@@ -46,16 +46,16 @@
 		</dependency>
 
 		<!-- LOGGING -->
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-api</artifactId> 
+			<version>1.7.12</version> </dependency> -->
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
+			<version>1.7.12</version> </dependency> -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.12</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.3</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.12</version>
-		</dependency>
+
 
 		<!-- TESTING -->
 		<dependency>

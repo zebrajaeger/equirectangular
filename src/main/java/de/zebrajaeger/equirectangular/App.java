@@ -7,8 +7,8 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
 import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.zebrajaeger.equirectangular.autopano.GPanoData;
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
@@ -20,7 +20,7 @@ public class App {
   // http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 
   // http://www.fileformat.info/format/psd/egff.htm
-  protected static Logger LOG = LoggerFactory.getLogger(App.class);
+  private static Logger LOG = LogManager.getLogger(App.class);
 
   public static void main(String[] args) throws IOException {
     new App().perform(args);
@@ -29,12 +29,20 @@ public class App {
   private CLIArgs cli;
 
   public void perform(String[] args) throws IOException {
+    System.out.println(Arrays.toString(args));
 
     // parse args
     try {
       cli = CLIArgs.Builder.build(args);
     } catch (final ParseException e) {
       LOG.error(e.getMessage());
+    }
+
+    // config LOG4j
+    if (cli.getLevel() != null) {
+      final org.apache.logging.log4j.core.Logger rootLogger =
+          (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
+      rootLogger.setLevel(cli.getLevel());
     }
 
     // check target file

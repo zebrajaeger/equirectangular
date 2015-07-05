@@ -9,8 +9,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -19,7 +19,7 @@ import de.zebrajaeger.equirectangular.util.ZJXmlUtils;
 
 public class GPanoData {
 
-  private static Logger LOG = LoggerFactory.getLogger(GPanoData.class);
+  private static Logger LOG = LogManager.getLogger(GPanoData.class);
 
   private Boolean usePanoramaViewer = null;
   private String projectionType = null;

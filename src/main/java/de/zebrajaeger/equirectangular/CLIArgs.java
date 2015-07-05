@@ -9,6 +9,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
 
 /**
  * Wrapper for command line argument parser
@@ -16,28 +17,32 @@ import org.apache.commons.cli.ParseException;
  * @author Lars Brandt
  */
 public class CLIArgs {
-  public final String OPT_HELP = "h";
-  public final String OPT_HELP_LONG = "help";
+  public final static String OPT_HELP = "h";
+  public final static String OPT_HELP_LONG = "help";
 
-  public final String OPT_TARGET_FILE = "o";
-  public final String OPT_TARGET_FILE_LONG = "out";
+  public final static String OPT_TARGET_FILE = "o";
+  public final static String OPT_TARGET_FILE_LONG = "out";
 
-  public final String OPT_DELETE_IF_EXISTS = "D";
-  public final String OPT_DELETE_IF_EXISTS_LONG = "delete";
+  public final static String OPT_DELETE_IF_EXISTS = "D";
+  public final static String OPT_DELETE_IF_EXISTS_LONG = "delete";
 
-  public final String OPT_DRY_RUN = "r";
-  public final String OPT_DRY_RUN_LONG = "dry-run";
+  public final static String OPT_DRY_RUN = "r";
+  public final static String OPT_DRY_RUN_LONG = "dry-run";
 
-  public final String OPT_TARGET_WIDTH = "w";
-  public final String OPT_TARGET_WIDTH_LONG = "target-width";
+  public final static String OPT_TARGET_WIDTH = "w";
+  public final static String OPT_TARGET_WIDTH_LONG = "target-width";
 
-  public final String OPT_TARGET_OFFSET_Y = "y";
-  public final String OPT_TARGET_OFFSET_Y_LONG = "offset-y";
+  public final static String OPT_TARGET_OFFSET_Y = "y";
+  public final static String OPT_TARGET_OFFSET_Y_LONG = "offset-y";
 
-  public final String OPT_LOG_LEVEL = "l";
-  public final String OPT_LOG_LEVEL_LONG = "log-level";
+  public final static String OPT_LOG_LEVEL = "l";
+  public final static String OPT_LOG_LEVEL_LONG = "log-level";
 
-  public final String TARGET_FILE_POSTFIX = "_full";
+  public final static String TARGET_FILE_POSTFIX = "_full";
+
+  // public static enum LEVEL {
+  // TRACE, DEBUG, INFO, WARN, ERROR
+  // }
 
   private CommandLine line = null;
   private Options options;
@@ -70,6 +75,7 @@ public class CLIArgs {
    * target image
    */
   private File target;
+  private Level level;
 
   /**
    * only package visibility cause we use a builder to create it
@@ -101,6 +107,18 @@ public class CLIArgs {
         "the log-level. One of TRACE, DEBUG, INFO(default), WARNING, ERROR");
 
     line = parser.parse(options, args);
+
+    // LEVEL
+    if (line.hasOption(OPT_LOG_LEVEL)) {
+      try {
+        level = Level.valueOf(line.getOptionValue(OPT_LOG_LEVEL));
+      } catch (final IllegalArgumentException e) {
+        final String msg =
+            String.format("Level must be one of [TRACE|DEBUG|INFO|WARN|ERROR] but is '%s'",
+                line.getOptionValue(OPT_LOG_LEVEL));
+        throw new ParseException(msg);
+      }
+    }
 
     // DRY RUN
     if (line.hasOption(OPT_DRY_RUN)) {
@@ -172,7 +190,7 @@ public class CLIArgs {
 
     for (int nr = -1; (target == null) || target.exists(); nr++) {
       final String n =
-          (nr == -1) ? String.format("%s%s%s", name, TARGET_FILE_POSTFIX, ext) : String.format("%s%s_%04d%n%s", name,
+          (nr == -1) ? String.format("%s%s%s", name, TARGET_FILE_POSTFIX, ext) : String.format("%s%s_%04d%s", name,
               TARGET_FILE_POSTFIX, nr, ext);
       target = new File(source.getParent(), n);
     }
@@ -243,6 +261,10 @@ public class CLIArgs {
 
   public File getTarget() {
     return this.target;
+  }
+
+  public Level getLevel() {
+    return this.level;
   }
 
   /**
