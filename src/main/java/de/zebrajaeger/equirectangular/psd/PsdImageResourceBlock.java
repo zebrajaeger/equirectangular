@@ -9,11 +9,15 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
 public class PsdImageResourceBlock implements IPsdMetaDataPart {
+
+  private static Logger LOG = LoggerFactory.getLogger(PsdImageResourceBlock.class);
 
   private byte[] signature = {'8', 'B', 'I', 'M'};
   private short uid;
@@ -60,8 +64,7 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
         decodedData = gPanoData;
         gPanoData.parse(data);
       } catch (final SAXException | IOException | ParserConfigurationException e) {
-        // TODO LOG me
-        e.printStackTrace();
+        LOG.error("could not parse XMP-Pano Data", e);
       }
     }
   }

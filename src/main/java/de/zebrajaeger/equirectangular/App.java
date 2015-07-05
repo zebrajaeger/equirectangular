@@ -1,12 +1,14 @@
 package de.zebrajaeger.equirectangular;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
+
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.zebrajaeger.equirectangular.autopano.GPanoData;
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
@@ -18,126 +20,105 @@ public class App {
   // http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 
   // http://www.fileformat.info/format/psd/egff.htm
+  protected static Logger LOG = LoggerFactory.getLogger(App.class);
 
-  public static void main(String[] args) throws IOException, InterruptedException {
-    final boolean dryRun = false;
+  public static void main(String[] args) throws IOException {
+    new App().perform(args);
+  }
 
-    if (args.length == 0) {
-      printUsage();
-      System.exit(-1);
+  private CLIArgs cli;
+
+  public void perform(String[] args) throws IOException {
+
+    // parse args
+    try {
+      cli = CLIArgs.Builder.build(args);
+    } catch (final ParseException e) {
+      LOG.error(e.getMessage());
     }
 
-    final LinkedList<File> images = new LinkedList<>();
-    for (final String arg : args) {
-      if (!arg.startsWith("-")) {
-        final File f = new File(arg);
-        if (!f.exists()) {
-          final String msg = String.format("could not found image '%s'", f.getAbsolutePath());
-          throw new IllegalArgumentException(msg);
-        };
-        images.add(f);
+    // check target file
+    if (cli.getTarget().exists()) {
+      if (cli.isDeleteIfExists()) {
+        LOG.info(String.format("Delete file '%s'", cli.getTarget().getAbsolutePath()));
+        if (cli.isDryRun()) {
+          LOG.info("  But while dry-run nothing happens...");
+        }
       } else {
-        // still no option support
+        final String msg =
+            String.format("Target file '%s' exists but option for overwriting is false", cli.getTarget()
+                .getAbsolutePath());
+        LOG.error(msg);
+        if (cli.isDryRun()) {
+          LOG.info("  But while dry-run we can proceed nothing happens...");
+        } else {
+          LOG.error("Exiting");
+          return;
+        }
       }
     }
 
-    if (images.isEmpty()) {
-      final String msg = "No images given";
-      throw new IllegalArgumentException(msg);
-    }
-
-    if (images.size() > 1) {
-      final String msg = "still only one image per call supported";
-      throw new IllegalArgumentException(msg);
-    }
-
-    final File in = images.get(0);
-    String n = in.getName();
-    final int pos = n.lastIndexOf('.');
-    if (pos == -1) {
-      final String msg = "image has no extension";
-      throw new IllegalArgumentException(msg);
-    }
-
-    final String ext = n.substring(pos);
-    n = n.substring(0, pos);
-    n = n + "_out" + ext;
-
-    final File out = new File(in.getParent(), n);
-
-    final File inFile = in;
-    if (!inFile.exists()) {
-      throw new IllegalArgumentException(String.format("Image '%s' does not exist", inFile.getAbsolutePath()));
-    }
-
-    final File outFile = out;
-
-    if (outFile.exists()) {
-      System.out.println(String.format("Delete file '%s'", outFile.getAbsolutePath()));
-      if (!dryRun) {
-        outFile.delete();
-      }
-    }
-
-    if (!dryRun) {
-      if (outFile.exists()) {
-        throw new IllegalArgumentException(String.format("Image '%s' already exist", inFile.getAbsolutePath()));
-      }
-    }
-
-    try (FileImageInputStream is = new FileImageInputStream(inFile);
-        FileImageOutputStream os = new FileImageOutputStream(outFile)) {
-
+    try (FileImageInputStream is = new FileImageInputStream(cli.getSource());
+        FileImageOutputStream os = new FileImageOutputStream(cli.getTarget())) {
 
       // create source image
       final PsdImg source = new PsdImg();
       source.prepareRead(is);
-      System.out.println("\n#### SOURCE IMAGE ####");
-      System.out.println(source);
+      LOG.info(String.format("Source-Image:\n ", source));
 
       final int source_w = source.getHeader().getColumns();
       final int source_h = source.getHeader().getRows();
-      System.out.println(String.format("source x:%s, y:%s", source_w, source_h));
+      LOG.info(String.format("Source-Image w:%s, h:%s", source_w, source_h));
 
+      // prepare render positions
+      RenderParameters pc = null;
 
-      // final double source_w_deg = 80.84;
-      // // final double source_h_deg = 53.86;
-      // final double source_ho_deg = -8.27;
-      //
-      // final PanoComputer pc = new PanoComputer(source_w, source_h, source_w_deg, source_ho_deg);
-
-      final GPanoData panoData = source.getImageResourceSection().getGPanoData();
-      if (panoData == null) {
-        throw new IllegalArgumentException(
-            "can not compute new image, cause ther is no gpanodata in xmp section available");
+      // prepare render positions - CLI
+      if (cli.getW() != null) {
+        pc = RenderParameters.Builder.buildWithWH(source_w, source_h, cli.getW(), cli.getY());
+        LOG.info("Taking command-line-arguments for target rendering");
       }
-      final PanoComputer pc = new PanoComputer(panoData);
 
-      System.out.println("\n#### COMPUTED VALUES ####");
-      System.out.println(pc);
+      // prepare render positions - AUTOPANO
+      final GPanoData panoData = source.getImageResourceSection().getGPanoData();
+      if (panoData != null) {
+        LOG.info(String.format("Found Render data from Autopano:\n %s", panoData));
+        if (cli.getW() == null) {
+          LOG.info("No command line option for target rendering avaliable. Use Autopano XMP data");
+        }
+      } else {
+        LOG.info("No Render data from Autopano available");
+      }
+
+      if (pc == null) {
+        LOG.error("Neither w options is given nor Autopano XMP-Data is available. Exiting");
+        return;
+      }
+
+      LOG.info("Computeted render values: \n %s", pc);
 
       // create target image
       final PsdImg target = new PsdImg(source);
       target.getHeader().setColumns(pc.getTarget_w());
       target.getHeader().setRows(pc.getTarget_h());
-      if (!dryRun) {
+      if (!cli.isDryRun()) {
         target.prepareWrite(os);
       }
-      System.out.println("\n#### TARGET IMAGE ####");
-      System.out.println(target);
+
+      LOG.info("Target image: \n %s", target);
 
       final int lineSize = target.getHeader().getColumns();
       final int imgSize = target.getHeader().getRows() * target.getHeader().getPixelSize() * lineSize;
-      System.out.println(String.format("resultimgSize ~ %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
+      LOG.info(String.format("resultimgSize ~ %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
 
       final byte[] buffer = new byte[lineSize];
-      System.out.println(String.format("Linebuffer.length=%s", buffer.length));
+      LOG.info(String.format("Linebuffer.length=%s", buffer.length));
 
       final int channels = target.getHeader().getChannels();
-      if (!dryRun) {
+      if (!cli.isDryRun()) {
         for (int i = 1; i <= channels; ++i) {
           final byte spaceValue = (byte) ((i == channels) ? 255 : 0);
-          System.out.println(String.format("WRITE LAYER %s with space %s", i, spaceValue));
+          LOG.info(String.format("WRITE LAYER %s with space %s", i, spaceValue));
           writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_top());
           copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, pc.getTarget_w(),
               pc.getSource_off_x(), pc.getSource_w(), pc.getSource_h());
@@ -145,19 +126,14 @@ public class App {
         }
       }
 
-      System.out.println("\n#### KRPANO XML SNIPPET ####");
-      System.out.println(pc.krPanoSnippt());
+      LOG.info(String.format("krPano view snippet: \n%s", pc.krPanoSnippt()));
+      LOG.info("finished");
     }
-  }
-
-  private static void printUsage() {
-    System.out.println("printUsage()");
-    // TODO implement printUsage
   }
 
   private static void copyLines(byte[] buffer, PsdImageData source, PsdImageData target, byte spaceValue, int targetW,
       int offX, int srcW, int srcH) throws IOException {
-    System.out.println(String.format("write COPY LINES: %s (start: %s)", srcH, offX));
+    LOG.info(String.format("write COPY LINES: %s (start: %s)", srcH, offX));
     final byte x = spaceValue;
 
     // space left
@@ -178,7 +154,7 @@ public class App {
   }
 
   public static void writeSpaceLines(byte[] buffer, PsdImageData target, byte value, int n) throws IOException {
-    System.out.println(String.format("write SPACE LINES: %s", n));
+    LOG.info(String.format("write SPACE LINES: %s", n));
     Arrays.fill(buffer, value);
     for (int i = 0; i < n; ++i) {
       target.write(buffer);

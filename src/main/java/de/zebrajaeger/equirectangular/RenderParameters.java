@@ -5,7 +5,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
-public class PanoComputer {
+public class RenderParameters {
   private int source_w = 0;
   private double source_w_deg = 0;
   private int source_h = 0;
@@ -20,11 +20,7 @@ public class PanoComputer {
   private int source_off_y_top = 0;
   private int source_off_y_bot = 0;
 
-  public PanoComputer(int src_w, int src_h, double src_w_deg) {
-    this(src_w, src_h, src_w_deg, 0.0);
-  }
-
-  public PanoComputer(int src_w, int src_h, double src_w_deg, double src_y_off_deg) {
+  protected RenderParameters(int src_w, int src_h, double src_w_deg, double src_y_off_deg) {
     this.source_w = src_w;
     this.source_h = src_h;
     this.source_w_deg = src_w_deg;
@@ -43,12 +39,7 @@ public class PanoComputer {
     this.source_off_y_bot = target_h - source_off_y_top - source_h;
   }
 
-  public PanoComputer(GPanoData pd) {
-    this(pd.getFullPanoWidthPixels(), pd.getFullPanoHeightPixels(), pd.getCroppedAreaImageWidthPixels(), pd
-        .getCroppedAreaImageHeightPixels(), pd.getCroppedAreaLeftPixels(), pd.getCroppedAreaTopPixels());
-  }
-
-  public PanoComputer(int target_w, int target_h, int src_w, int src_h, int src_off_x, int src_off_y) {
+  protected RenderParameters(int target_w, int target_h, int src_w, int src_h, int src_off_x, int src_off_y) {
     this.source_w = src_w;
     this.source_h = src_h;
     this.source_w_deg = (360.0 * src_w) / target_w;
@@ -150,4 +141,15 @@ public class PanoComputer {
     return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
   }
 
+  public static class Builder {
+    public static RenderParameters buildWithWH(int src_w, int src_h, double src_w_deg, double src_y_off_deg) {
+      return new RenderParameters(src_w, src_h, src_w_deg, src_y_off_deg);
+    }
+
+    public static RenderParameters buildFromAutopano(GPanoData pd) {
+      return new RenderParameters(pd.getFullPanoWidthPixels(), pd.getFullPanoHeightPixels(),
+          pd.getCroppedAreaImageWidthPixels(), pd.getCroppedAreaImageHeightPixels(), pd.getCroppedAreaLeftPixels(),
+          pd.getCroppedAreaTopPixels());
+    }
+  }
 }

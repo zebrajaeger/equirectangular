@@ -9,6 +9,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -16,6 +18,8 @@ import org.xml.sax.SAXException;
 import de.zebrajaeger.equirectangular.util.ZJXmlUtils;
 
 public class GPanoData {
+
+  private static Logger LOG = LoggerFactory.getLogger(GPanoData.class);
 
   private Boolean usePanoramaViewer = null;
   private String projectionType = null;
@@ -75,9 +79,8 @@ public class GPanoData {
     try {
       return Integer.parseInt(val);
     } catch (final NumberFormatException e) {
-      // TODO LOG ME
       final String msg = String.format("can not convert parameter '%s' with value '%s' to long", name, val);
-      System.out.println(msg);
+      LOG.error(msg);
     }
     return null;
   }
@@ -90,9 +93,8 @@ public class GPanoData {
     try {
       return Boolean.parseBoolean(val);
     } catch (final NumberFormatException e) {
-      // TODO LOG ME
       final String msg = String.format("can not convert parameter '%s' with value '%s' to long", name, val);
-      System.out.println(msg);
+      LOG.error(msg);
     }
     return null;
   }
@@ -143,5 +145,4 @@ public class GPanoData {
   public String toString() {
     return ReflectionToStringBuilder.toString(this);
   }
-
 }
