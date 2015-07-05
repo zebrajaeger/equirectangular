@@ -18,6 +18,12 @@ import org.xml.sax.SAXException;
 
 import de.zebrajaeger.equirectangular.util.ZJXmlUtils;
 
+/**
+ * A wrapper for the XMP-Data that Autopano normally puts into a rendered panoramic image
+ * 
+ * @author Lars Brandt
+ *
+ */
 public class GPanoData {
 
   private static Logger LOG = LogManager.getLogger(GPanoData.class);
@@ -33,7 +39,15 @@ public class GPanoData {
   private Integer fullPanoWidthPixels = null;
   private Integer fullPanoHeightPixels = null;
 
-  public void parse(byte[] data) throws ParserConfigurationException, SAXException, IOException {
+  /**
+   * Changes the bytes into ascii string and pares it as a XML-document
+   * 
+   * @param data the data to parse
+   * @throws ParserConfigurationException
+   * @throws SAXException
+   * @throws IOException
+   */
+  protected void parse(byte[] data) throws ParserConfigurationException, SAXException, IOException {
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final DocumentBuilder builder = factory.newDocumentBuilder();
     final Document document = builder.parse(new ByteArrayInputStream(data));
@@ -145,5 +159,14 @@ public class GPanoData {
   @Override
   public String toString() {
     return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
+  }
+
+  public static class Builder {
+    public static GPanoData buildFrombytes(byte[] content) throws ParserConfigurationException, SAXException,
+        IOException {
+      final GPanoData res = new GPanoData();
+      res.parse(content);
+      return res;
+    }
   }
 }

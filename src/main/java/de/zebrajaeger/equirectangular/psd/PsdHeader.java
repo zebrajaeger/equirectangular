@@ -148,8 +148,6 @@ public class PsdHeader implements IPsdMetaDataPart {
     os.writeShort(mode.getId());
   }
 
-
-
   public String getSignature() {
     return this.signature;
   }

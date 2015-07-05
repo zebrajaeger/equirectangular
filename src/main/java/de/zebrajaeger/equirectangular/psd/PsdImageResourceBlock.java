@@ -54,14 +54,11 @@ public class PsdImageResourceBlock implements IPsdMetaDataPart {
     if (uid == 1058) {
       // EXIF
       // decodedData = new String(data, StandardCharsets.US_ASCII);
-    }
-    if (uid == 1060) {
+    } else if (uid == 1060) {
       // XMP see http://www.w3.org/RDF/Validator/
       decodedData = new String(data, StandardCharsets.US_ASCII);
       try {
-        final GPanoData gPanoData = new GPanoData();
-        decodedData = gPanoData;
-        gPanoData.parse(data);
+        decodedData = GPanoData.Builder.buildFrombytes(data);
       } catch (final SAXException | IOException | ParserConfigurationException e) {
         LOG.error("could not parse XMP-Pano Data", e);
       }
