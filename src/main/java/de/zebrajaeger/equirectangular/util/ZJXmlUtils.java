@@ -40,7 +40,6 @@ public class ZJXmlUtils {
     for (int i = 0; i < list.getLength(); i++) {
       final Node subnode = list.item(i);
       if (subnode.getNodeType() == Node.ELEMENT_NODE) {
-        System.out.println(subnode.getNodeName());
         if (subnode.getNodeName().equals(name)) {
           return subnode;
         }

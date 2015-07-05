@@ -14,6 +14,7 @@ import de.zebrajaeger.equirectangular.autopano.GPanoData;
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
 import de.zebrajaeger.equirectangular.psd.PsdImg;
 import de.zebrajaeger.equirectangular.util.ZJFileUtils;
+import de.zebrajaeger.equirectangular.util.ZJLogUtil;
 
 public class App {
 
@@ -29,7 +30,6 @@ public class App {
   private CLIArgs cli;
 
   public void perform(String[] args) throws IOException {
-    System.out.println(Arrays.toString(args));
 
     // parse args
     try {
@@ -37,19 +37,17 @@ public class App {
     } catch (final ParseException e) {
       LOG.error(e.getMessage());
     }
-
+    final boolean dry = cli.isDryRun();
     // config LOG4j
     if (cli.getLevel() != null) {
-      final org.apache.logging.log4j.core.Logger rootLogger =
-          (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
-      rootLogger.setLevel(cli.getLevel());
+      ZJLogUtil.changeLogLevel(cli.getLevel());
     }
 
     // check target file
     if (cli.getTarget().exists()) {
       if (cli.isDeleteIfExists()) {
         LOG.info(String.format("Delete file '%s'", cli.getTarget().getAbsolutePath()));
-        if (cli.isDryRun()) {
+        if (dry) {
           LOG.info("  But while dry-run nothing happens...");
         }
       } else {
@@ -57,7 +55,7 @@ public class App {
             String.format("Target file '%s' exists but option for overwriting is false", cli.getTarget()
                 .getAbsolutePath());
         LOG.error(msg);
-        if (cli.isDryRun()) {
+        if (dry) {
           LOG.info("  But while dry-run we can proceed nothing happens...");
         } else {
           LOG.error("Exiting");
@@ -67,74 +65,75 @@ public class App {
     }
 
     try (FileImageInputStream is = new FileImageInputStream(cli.getSource());
-        FileImageOutputStream os = new FileImageOutputStream(cli.getTarget())) {
+        FileImageOutputStream os = (dry) ? null : new FileImageOutputStream(cli.getTarget())) {
 
       // create source image
       final PsdImg source = new PsdImg();
       source.prepareRead(is);
-      LOG.info(String.format("Source-Image:\n ", source));
+      LOG.debug(String.format("Source-Image: %n%s", source));
 
       final int source_w = source.getHeader().getColumns();
       final int source_h = source.getHeader().getRows();
       LOG.info(String.format("Source-Image w:%s, h:%s", source_w, source_h));
 
       // prepare render positions
-      RenderParameters pc = null;
+      RenderParameters rp = null;
 
       // prepare render positions - CLI
       if (cli.getW() != null) {
-        pc = RenderParameters.Builder.buildWithWH(source_w, source_h, cli.getW(), cli.getY());
+        rp = RenderParameters.Builder.buildWithWH(source_w, source_h, cli.getW(), cli.getY());
         LOG.info("Taking command-line-arguments for target rendering");
       }
 
       // prepare render positions - AUTOPANO
       final GPanoData panoData = source.getImageResourceSection().getGPanoData();
       if (panoData != null) {
-        LOG.info(String.format("Found Render data from Autopano:\n %s", panoData));
+        LOG.info(String.format("Found Render data from Autopano:%n %s", panoData));
         if (cli.getW() == null) {
           LOG.info("No command line option for target rendering avaliable. Use Autopano XMP data");
+          rp = RenderParameters.Builder.buildFromAutopano(panoData);
         }
       } else {
         LOG.info("No Render data from Autopano available");
       }
 
-      if (pc == null) {
+      if (rp == null) {
         LOG.error("Neither w options is given nor Autopano XMP-Data is available. Exiting");
         return;
       }
 
-      LOG.info("Computeted render values: \n %s", pc);
+      LOG.info(String.format("Computeted render values: %n%s", rp));
 
       // create target image
       final PsdImg target = new PsdImg(source);
-      target.getHeader().setColumns(pc.getTarget_w());
-      target.getHeader().setRows(pc.getTarget_h());
-      if (!cli.isDryRun()) {
+      target.getHeader().setColumns(rp.getTarget_w());
+      target.getHeader().setRows(rp.getTarget_h());
+      if (!dry) {
         target.prepareWrite(os);
       }
 
-      LOG.info("Target image: \n %s", target);
+      LOG.debug(String.format("Target image: %n%s", target));
 
       final int lineSize = target.getHeader().getColumns();
       final int imgSize = target.getHeader().getRows() * target.getHeader().getPixelSize() * lineSize;
       LOG.info(String.format("resultimgSize ~ %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
 
       final byte[] buffer = new byte[lineSize];
-      LOG.info(String.format("Linebuffer.length=%s", buffer.length));
+      LOG.debug(String.format("Linebuffer.length=%s", buffer.length));
 
       final int channels = target.getHeader().getChannels();
-      if (!cli.isDryRun()) {
+      if (!dry) {
         for (int i = 1; i <= channels; ++i) {
           final byte spaceValue = (byte) ((i == channels) ? 255 : 0);
           LOG.info(String.format("WRITE LAYER %s with space %s", i, spaceValue));
-          writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_top());
-          copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, pc.getTarget_w(),
-              pc.getSource_off_x(), pc.getSource_w(), pc.getSource_h());
-          writeSpaceLines(buffer, target.getImgData(), spaceValue, pc.getSource_off_y_bot());
+          writeSpaceLines(buffer, target.getImgData(), spaceValue, rp.getSource_off_y_top());
+          copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, rp.getTarget_w(),
+              rp.getSource_off_x(), rp.getSource_w(), rp.getSource_h());
+          writeSpaceLines(buffer, target.getImgData(), spaceValue, rp.getSource_off_y_bot());
         }
       }
 
-      LOG.info(String.format("krPano view snippet: \n%s", pc.krPanoSnippt()));
+      LOG.info(String.format("krPano view snippet: %n%s", rp.krPanoSnippt()));
       LOG.info("finished");
     }
   }

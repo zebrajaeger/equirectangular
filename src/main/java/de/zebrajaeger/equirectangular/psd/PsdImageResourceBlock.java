@@ -18,7 +18,7 @@ import de.zebrajaeger.equirectangular.autopano.GPanoData;
 public class PsdImageResourceBlock implements IPsdMetaDataPart {
 
   private static Logger LOG = LogManager.getLogger(PsdImageResourceBlock.class);
-  private byte[] signature = {'8', 'B', 'I', 'M'};
+  private transient byte[] signature = {'8', 'B', 'I', 'M'};
   private short uid;
   private PascalString name;
   private int size;
