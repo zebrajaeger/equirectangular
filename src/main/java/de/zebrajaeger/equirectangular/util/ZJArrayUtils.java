@@ -1,6 +1,9 @@
 package de.zebrajaeger.equirectangular.util;
 
 public class ZJArrayUtils {
+  /**
+   * make a copy of a byte array. if source is null, target is also null
+   */
   public static byte[] copy(byte[] source) {
     if (source == null) {
       return null;

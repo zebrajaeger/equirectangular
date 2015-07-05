@@ -7,6 +7,12 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 public class ZJLogUtil {
+
+  /**
+   * change the loglevel of log4j2 for the root logger directly
+   * 
+   * @param level the new loglevel
+   */
   public static void changeLogLevel(Level level) {
     final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     final Configuration config = ctx.getConfiguration();

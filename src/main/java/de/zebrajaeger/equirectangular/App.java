@@ -36,7 +36,13 @@ public class App {
       cli = CLIArgs.Builder.build(args);
     } catch (final ParseException e) {
       LOG.error(e.getMessage());
+      return;
     }
+
+    if (cli == null) {
+      return;
+    }
+
     final boolean dry = cli.isDryRun();
     // config LOG4j
     if (cli.getLevel() != null) {

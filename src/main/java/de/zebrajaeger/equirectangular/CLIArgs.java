@@ -109,6 +109,12 @@ public class CLIArgs {
     line = parser.parse(options, args);
 
     // LEVEL
+    if (line.hasOption(OPT_HELP)) {
+      printHelp();
+      return false;
+    }
+
+    // LEVEL
     if (line.hasOption(OPT_LOG_LEVEL)) {
       try {
         level = Level.valueOf(line.getOptionValue(OPT_LOG_LEVEL));
@@ -235,7 +241,7 @@ public class CLIArgs {
    */
   public void printHelp() {
     final HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp("equirectangular", options);
+    formatter.printHelp("java -jar equirectangular [Options] <sourcefile>", options);
   }
 
 
@@ -275,8 +281,10 @@ public class CLIArgs {
   public static class Builder {
     public static CLIArgs build(String[] args) throws ParseException {
       final CLIArgs cliArgs = new CLIArgs();
-      cliArgs.parse(args);
-      return cliArgs;
+      if (cliArgs.parse(args)) {
+        return cliArgs;
+      };
+      return null;
     }
   }
 }

@@ -6,7 +6,21 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+ * Utils to make live with jaxp easier
+ * 
+ * @author lars
+ *
+ */
 public class ZJXmlUtils {
+  /**
+   * Find all attribute in a node with specific prefix.
+   * 
+   * @param node the note that contains the attributes
+   * @param prefix the prefix to search for
+   * @param removePrefix true: removes the prefix from attribute name (name is the key of resulting map)
+   * @return the values or a empty map
+   */
   public static HashMap<String, String> getAttributes(Node node, String prefix, boolean removePrefix) {
     final HashMap<String, String> result = new HashMap<>();
 
@@ -24,6 +38,12 @@ public class ZJXmlUtils {
     return result;
   }
 
+  /**
+   * Get all attributes as a Map from a node
+   * 
+   * @param node the node taht contains the attributes to read
+   * @return the values or a empty map
+   */
   public static HashMap<String, String> getAttributes(Node node) {
     final HashMap<String, String> result = new HashMap<>();
 
@@ -35,6 +55,13 @@ public class ZJXmlUtils {
     return result;
   }
 
+  /**
+   * Get the first node with a given name and returns it
+   * 
+   * @param root the node that contains the children to search within
+   * @param name the name of the node
+   * @return a node with given or null if not found
+   */
   public static Node find(Node root, String name) {
     final NodeList list = root.getChildNodes();
     for (int i = 0; i < list.getLength(); i++) {
