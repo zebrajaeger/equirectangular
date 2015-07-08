@@ -10,7 +10,10 @@ import javax.swing.*;
  */
 public class FileDropper extends JDialog {
 
-  private final FileDropTarget dropTarget;
+  /**
+   *
+   */
+  private final FileDropTarget_ dropTarget;
 
   public FileDropper() {
     super();
@@ -27,7 +30,7 @@ public class FileDropper extends JDialog {
     add(createLabel(" "));
     add(createLabel("here"));
 
-    dropTarget = new FileDropTarget();
+    dropTarget = new FileDropTarget_();
     setDropTarget(dropTarget);
     dropTarget.addListener(new IFileDropListener() {
       @Override
@@ -47,6 +50,14 @@ public class FileDropper extends JDialog {
     setVisible(true);
   }
 
+  public void addListener(IFileDropListener listener) {
+    dropTarget.addListener(listener);
+  }
+
+  public void removeListener(IFileDropListener listener) {
+    dropTarget.removeListener(listener);
+  }
+
   protected JLabel createLabel(String title) {
     JLabel res = new JLabel(title);
     res.setHorizontalAlignment(SwingConstants.CENTER);
@@ -62,11 +73,4 @@ public class FileDropper extends JDialog {
     new FileDropper();
   }
 
-  public void addListener(IFileDropListener listener) {
-    dropTarget.addListener(listener);
-  }
-
-  public void removeListener(IFileDropListener listener) {
-    dropTarget.removeListener(listener);
-  }
 }
