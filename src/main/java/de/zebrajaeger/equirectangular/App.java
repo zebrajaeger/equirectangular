@@ -14,36 +14,42 @@
  */
 package de.zebrajaeger.equirectangular;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.FileImageOutputStream;
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
+import de.zebrajaeger.equirectangular.psd.PsdImageData;
+import de.zebrajaeger.equirectangular.psd.PsdImg;
+import de.zebrajaeger.equirectangular.ui.FileDropper;
+import de.zebrajaeger.equirectangular.ui.IFileDropListener;
+import de.zebrajaeger.equirectangular.util.ZJFileUtils;
+import de.zebrajaeger.equirectangular.util.ZJLogUtil;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.zebrajaeger.equirectangular.autopano.GPanoData;
-import de.zebrajaeger.equirectangular.psd.PsdImageData;
-import de.zebrajaeger.equirectangular.psd.PsdImg;
-import de.zebrajaeger.equirectangular.util.ZJFileUtils;
-import de.zebrajaeger.equirectangular.util.ZJLogUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
 
 public class App {
+
+  public final static String TARGET_FILE_POSTFIX = "_full";
 
   // http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 
   // http://www.fileformat.info/format/psd/egff.htm
   private static Logger LOG = LogManager.getLogger(App.class);
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, ParseException {
     new App().perform(args);
   }
 
   private CLIArgs cli;
 
-  public void perform(String[] args) throws IOException {
+  public void perform(String[] args) throws IOException, ParseException {
 
     // parse args
     try {
@@ -58,42 +64,83 @@ public class App {
     }
 
     final boolean dry = cli.isDryRun();
+
     // config LOG4j
     if (cli.getLevel() != null) {
       ZJLogUtil.changeLogLevel(cli.getLevel());
     }
 
-    // check target file
-    if (cli.getTarget().exists()) {
-      if (cli.isDeleteIfExists()) {
-        LOG.info(String.format("Delete file '%s'", cli.getTarget().getAbsolutePath()));
-        if (dry) {
-          LOG.info("  But while dry-run nothing happens...");
+    if (cli.isUseUi()) {
+      FileDropper fd = new FileDropper();
+      fd.addListener(new IFileDropListener() {
+        @Override
+        public boolean onAcceptDrop(List<File> files) {
+          for (File f : files) {
+            String name = f.getName().toLowerCase();
+            if (!(name.endsWith(".psd") || name.endsWith(".psb"))) {
+              return false;
+            }
+          }
+          return true;
         }
-      } else {
-        final String msg =
-            String.format("Target file '%s' exists but option for overwriting is false", cli.getTarget()
-                .getAbsolutePath());
-        LOG.error(msg);
-        if (dry) {
-          LOG.info("  But while dry-run we can proceed nothing happens...");
+
+        @Override
+        public void onDrop(List<File> files) {
+          for (File f : files) {
+            try {
+              File target = chooseTargetFile(f, TARGET_FILE_POSTFIX, cli.isDeleteIfExists());
+              LOG.info(String.format("start processing file '%s' to '%s'",f, target));
+              processImage(dry, f, target);
+            } catch (ParseException | IOException e) {
+              String msg = String.format("could not process image '%s'", e);
+              LOG.error(msg, e);
+            }
+          }
+        }
+      });
+    } else {
+      // check target file
+      File source = cli.getSource();
+      File target = cli.getTarget();
+      if (target == null) {
+        target = chooseTargetFile(source, TARGET_FILE_POSTFIX, cli.isDeleteIfExists());
+      }
+
+      if (target.exists()) {
+        if (cli.isDeleteIfExists()) {
+          LOG.info(String.format("Delete file '%s'", target.getAbsolutePath()));
+          if (dry) {
+            LOG.info("  But while dry-run nothing happens...");
+          }
         } else {
-          LOG.error("Exiting");
-          return;
+          final String msg =
+              String.format("Target file '%s' exists but option for overwriting is false", target
+                  .getAbsolutePath());
+          LOG.error(msg);
+          if (dry) {
+            LOG.info("  But while dry-run we can proceed nothing happens...");
+          } else {
+            LOG.error("Exiting");
+            return;
+          }
         }
       }
-    }
 
-    try (FileImageInputStream is = new FileImageInputStream(cli.getSource());
-        FileImageOutputStream os = (dry) ? null : new FileImageOutputStream(cli.getTarget())) {
+      processImage(dry, source, target);
+    }
+  }
+
+  protected void processImage(boolean dry, File source, File target) throws IOException {
+    try (FileImageInputStream is = new FileImageInputStream(source);
+         FileImageOutputStream os = (dry) ? null : new FileImageOutputStream(target)) {
 
       // create source image
-      final PsdImg source = new PsdImg();
-      source.prepareRead(is);
-      LOG.debug(String.format("Source-Image: %n%s", source));
+      final PsdImg sourceImg = new PsdImg();
+      sourceImg.prepareRead(is);
+      LOG.debug(String.format("Source-Image: %n%s", sourceImg));
 
-      final int source_w = source.getHeader().getColumns();
-      final int source_h = source.getHeader().getRows();
+      final int source_w = sourceImg.getHeader().getColumns();
+      final int source_h = sourceImg.getHeader().getRows();
       LOG.info(String.format("Source-Image w:%s, h:%s", source_w, source_h));
 
       // prepare render positions
@@ -106,7 +153,7 @@ public class App {
       }
 
       // prepare render positions - AUTOPANO
-      final GPanoData panoData = source.getImageResourceSection().getGPanoData();
+      final GPanoData panoData = sourceImg.getImageResourceSection().getGPanoData();
       if (panoData != null) {
         LOG.info(String.format("Found Render data from Autopano:%n %s", panoData));
         if (cli.getW() == null) {
@@ -125,31 +172,31 @@ public class App {
       LOG.info(String.format("Computeted render values: %n%s", rp));
 
       // create target image
-      final PsdImg target = new PsdImg(source);
-      target.getHeader().setColumns(rp.getTarget_w());
-      target.getHeader().setRows(rp.getTarget_h());
+      final PsdImg targetImg = new PsdImg(sourceImg);
+      targetImg.getHeader().setColumns(rp.getTarget_w());
+      targetImg.getHeader().setRows(rp.getTarget_h());
       if (!dry) {
-        target.prepareWrite(os);
+        targetImg.prepareWrite(os);
       }
 
-      LOG.debug(String.format("Target image: %n%s", target));
+      LOG.debug(String.format("Target image: %n%s", targetImg));
 
-      final int lineSize = target.getHeader().getColumns();
-      final int imgSize = target.getHeader().getRows() * target.getHeader().getPixelSize() * lineSize;
+      final int lineSize = targetImg.getHeader().getColumns();
+      final int imgSize = targetImg.getHeader().getRows() * targetImg.getHeader().getPixelSize() * lineSize;
       LOG.info(String.format("resultimgSize ~ %sM", ZJFileUtils.humanReadableByteCount(imgSize, false)));
 
       final byte[] buffer = new byte[lineSize];
       LOG.debug(String.format("Linebuffer.length=%s", buffer.length));
 
-      final int channels = target.getHeader().getChannels();
+      final int channels = targetImg.getHeader().getChannels();
       if (!dry) {
         for (int i = 1; i <= channels; ++i) {
           final byte spaceValue = (byte) ((i == channels) ? 255 : 0);
           LOG.info(String.format("WRITE LAYER %s with space %s", i, spaceValue));
-          writeSpaceLines(buffer, target.getImgData(), spaceValue, rp.getSource_off_y_top());
-          copyLines(buffer, source.getImgData(), target.getImgData(), spaceValue, rp.getTarget_w(),
-              rp.getSource_off_x(), rp.getSource_w(), rp.getSource_h());
-          writeSpaceLines(buffer, target.getImgData(), spaceValue, rp.getSource_off_y_bot());
+          writeSpaceLines(buffer, targetImg.getImgData(), spaceValue, rp.getSource_off_y_top());
+          copyLines(buffer, sourceImg.getImgData(), targetImg.getImgData(), spaceValue, rp.getTarget_w(),
+                    rp.getSource_off_x(), rp.getSource_w(), rp.getSource_h());
+          writeSpaceLines(buffer, targetImg.getImgData(), spaceValue, rp.getSource_off_y_bot());
         }
       }
 
@@ -158,8 +205,8 @@ public class App {
     }
   }
 
-  private static void copyLines(byte[] buffer, PsdImageData source, PsdImageData target, byte spaceValue, int targetW,
-      int offX, int srcW, int srcH) throws IOException {
+  protected static void copyLines(byte[] buffer, PsdImageData source, PsdImageData target, byte spaceValue, int targetW,
+                                  int offX, int srcW, int srcH) throws IOException {
     LOG.info(String.format("write COPY LINES: %s (start: %s)", srcH, offX));
     final byte x = spaceValue;
 
@@ -180,12 +227,36 @@ public class App {
     }
   }
 
-  public static void writeSpaceLines(byte[] buffer, PsdImageData target, byte value, int n) throws IOException {
+  protected static void writeSpaceLines(byte[] buffer, PsdImageData target, byte value, int n) throws IOException {
     LOG.info(String.format("write SPACE LINES: %s", n));
     Arrays.fill(buffer, value);
     for (int i = 0; i < n; ++i) {
       target.write(buffer);
     }
+  }
+
+  /**
+   * if no target file is given, compute one that not exists from input file name
+   */
+  protected File chooseTargetFile(File source, String postfix, boolean deleteIfExists) throws ParseException {
+    File target = null;
+    final String filename = source.getName();
+    final int pos = filename.lastIndexOf('.');
+    String name = filename;
+    String ext = "";
+    if (pos != -1) {
+      ext = filename.substring(pos);
+      name = filename.substring(0, pos);
+    }
+
+    for (int nr = -1; (target == null) || (!deleteIfExists && target.exists()); nr++) {
+      final String n =
+          (nr == -1) ? String.format("%s%s%s", name, postfix, ext) : String.format("%s%s_%04d%s", name,
+                                                                                   postfix, nr, ext);
+      target = new File(source.getParent(), n);
+    }
+
+    return target;
   }
 
 }

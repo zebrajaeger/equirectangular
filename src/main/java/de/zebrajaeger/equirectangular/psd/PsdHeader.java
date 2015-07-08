@@ -15,14 +15,14 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import java.io.IOException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
-
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
-import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
 
 public class PsdHeader implements IPsdMetaDataPart {
 
@@ -92,7 +92,7 @@ public class PsdHeader implements IPsdMetaDataPart {
 
   private String signature = "8BPS";
   private VERSION version;
-  private byte[] reserved = new byte[] {0, 0, 0, 0, 0, 0};
+  private byte[] reserved = new byte[]{0, 0, 0, 0, 0, 0};
   private short channels;
   private int rows;
   private int columns;

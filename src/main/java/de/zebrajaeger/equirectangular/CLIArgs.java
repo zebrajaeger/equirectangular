@@ -14,9 +14,6 @@
  */
 package de.zebrajaeger.equirectangular;
 
-import java.io.File;
-import java.util.List;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -25,12 +22,16 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
 
+import java.io.File;
+import java.util.List;
+
 /**
  * Wrapper for command line argument parser
- * 
+ *
  * @author Lars Brandt
  */
 public class CLIArgs {
+
   public final static String OPT_HELP = "h";
   public final static String OPT_HELP_LONG = "help";
 
@@ -52,11 +53,9 @@ public class CLIArgs {
   public final static String OPT_LOG_LEVEL = "l";
   public final static String OPT_LOG_LEVEL_LONG = "log-level";
 
-  public final static String TARGET_FILE_POSTFIX = "_full";
+  public final static String OPT_LOG_UI = "t";
+  public final static String OPT_LOG_UI_LONG = "drop-target";
 
-  // public static enum LEVEL {
-  // TRACE, DEBUG, INFO, WARN, ERROR
-  // }
 
   private CommandLine line = null;
   private Options options;
@@ -88,20 +87,28 @@ public class CLIArgs {
   /**
    * target image
    */
-  private File target;
+  private File target = null;
+
+  /**
+   * debug level
+   */
   private Level level;
+  /**
+   * start ui drop target windows
+   */
+  private boolean useUi = false;
 
   /**
    * only package visibility cause we use a builder to create it
    */
-  protected CLIArgs() {}
+  protected CLIArgs() {
+  }
 
   /**
    * Parses and validates the args against options
-   * 
+   *
    * @param args command line args
    * @return true for execute application
-   * @throws ParseException
    */
   protected boolean parse(String[] args) throws ParseException {
     final CommandLineParser parser = new DefaultParser();
@@ -110,7 +117,7 @@ public class CLIArgs {
     options.addOption(OPT_HELP, OPT_HELP_LONG, false, "show this help");
 
     options.addOption(OPT_TARGET_FILE, OPT_TARGET_FILE_LONG, true,
-        "the target file. Without this option a file with a new filename is generated in the source-directory");
+                      "the target file. Without this option a file with a new filename is generated in the source-directory");
     options.addOption(OPT_DELETE_IF_EXISTS, OPT_DELETE_IF_EXISTS_LONG, false, "delete target file if exists");
     options.addOption(OPT_DRY_RUN, OPT_DRY_RUN_LONG, false, "make a dry run: no changing file calls will made");
 
@@ -118,7 +125,9 @@ public class CLIArgs {
     options.addOption(OPT_TARGET_OFFSET_Y, OPT_TARGET_OFFSET_Y_LONG, true, "the y difference from middle in percent");
 
     options.addOption(OPT_LOG_LEVEL, OPT_LOG_LEVEL_LONG, true,
-        "the log-level. One of TRACE, DEBUG, INFO(default), WARNING, ERROR");
+                      "the log-level. One of TRACE, DEBUG, INFO(default), WARNING, ERROR");
+    options.addOption(OPT_LOG_UI, OPT_LOG_UI_LONG, false,
+                      "start drop target window instead using command line args");
 
     line = parser.parse(options, args);
 
@@ -135,7 +144,7 @@ public class CLIArgs {
       } catch (final IllegalArgumentException e) {
         final String msg =
             String.format("Level must be one of [TRACE|DEBUG|INFO|WARN|ERROR] but is '%s'",
-                line.getOptionValue(OPT_LOG_LEVEL));
+                          line.getOptionValue(OPT_LOG_LEVEL));
         throw new ParseException(msg);
       }
     }
@@ -148,6 +157,11 @@ public class CLIArgs {
     // DELETE IF EXIST
     if (line.hasOption(OPT_DELETE_IF_EXISTS)) {
       deleteIfExists = true;
+    }
+
+    // UI
+    if (line.hasOption(OPT_LOG_UI)) {
+      useUi = true;
     }
 
     // WIDTH
@@ -166,59 +180,36 @@ public class CLIArgs {
     }
 
     // SOURCE-FILE
-    final List<String> x = line.getArgList();
+    if (!isUseUi()) {
+      final List<String> x = line.getArgList();
 
-    if (x.isEmpty()) {
-      throw new ParseException("a source file is needed");
-    }
+      if (x.isEmpty()) {
+        throw new ParseException("a source file is needed");
+      }
 
-    if (x.size() > 1) {
-      throw new ParseException("only one file please");
-    } else {
-      final File f = new File(x.get(0));
-      if (!f.exists()) {
-        final String msg = String.format("The file '%s' could not be found");
-        throw new ParseException(msg);
+      if (x.size() > 1) {
+        throw new ParseException("only one file please");
       } else {
-        source = f;
+        final File f = new File(x.get(0));
+        if (!f.exists()) {
+          final String msg = String.format("The file '%s' could not be found");
+          throw new ParseException(msg);
+        } else {
+          source = f;
+        }
       }
     }
 
     // TARGE-FILE
-    if (!line.hasOption(OPT_TARGET_FILE)) {
-      chooseTargetFile();
-    } else {
+    if (line.hasOption(OPT_TARGET_FILE)) {
       target = new File(line.getOptionValue(OPT_TARGET_FILE));
     }
     return true;
   }
 
   /**
-   * if no target file is given, compute one that not exists from input file name
-   * 
-   * @throws ParseException
-   */
-  protected void chooseTargetFile() throws ParseException {
-    final String filename = source.getName();
-    final int pos = filename.lastIndexOf('.');
-    String name = filename;
-    String ext = "";
-    if (pos != -1) {
-      ext = filename.substring(pos);
-      name = filename.substring(0, pos);
-    }
-
-    for (int nr = -1; (target == null) || target.exists(); nr++) {
-      final String n =
-          (nr == -1) ? String.format("%s%s%s", name, TARGET_FILE_POSTFIX, ext) : String.format("%s%s_%04d%s", name,
-              TARGET_FILE_POSTFIX, nr, ext);
-      target = new File(source.getParent(), n);
-    }
-  }
-
-  /**
    * Get an int-value-otion
-   * 
+   *
    * @param name option name
    * @throws ParseException if value could not be parsed
    */
@@ -235,8 +226,8 @@ public class CLIArgs {
 
   /**
    * Get an double-value-otion
-   * 
-   * @param oPT_TARGET_WIDTH2 option name
+   *
+   * @param name option name
    * @throws ParseException if value could not be parsed
    */
   protected Double parseDouble(String name) throws ParseException {
@@ -286,17 +277,27 @@ public class CLIArgs {
     return this.level;
   }
 
+  public boolean isUseUi() {
+    return useUi;
+  }
+
+  public void setUseUi(boolean useUi) {
+    this.useUi = useUi;
+  }
+
   /**
    * the 'Factory' to create a instance
-   * 
+   *
    * @author Lars Brandt
    */
   public static class Builder {
+
     public static CLIArgs build(String[] args) throws ParseException {
       final CLIArgs cliArgs = new CLIArgs();
       if (cliArgs.parse(args)) {
         return cliArgs;
-      };
+      }
+      ;
       return null;
     }
   }

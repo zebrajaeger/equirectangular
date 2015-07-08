@@ -15,12 +15,7 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.xml.parsers.ParserConfigurationException;
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -28,7 +23,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import de.zebrajaeger.equirectangular.autopano.GPanoData;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class PsdImageResourceBlock implements IPsdMetaDataPart {
 

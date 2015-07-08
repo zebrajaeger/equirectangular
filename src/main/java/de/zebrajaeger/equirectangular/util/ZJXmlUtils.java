@@ -15,24 +15,24 @@
 
 package de.zebrajaeger.equirectangular.util;
 
-import java.util.HashMap;
-
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.HashMap;
+
 /**
  * Utils to make live with jaxp easier
- * 
- * @author lars
  *
+ * @author lars
  */
 public class ZJXmlUtils {
+
   /**
    * Find all attribute in a node with specific prefix.
-   * 
-   * @param node the note that contains the attributes
-   * @param prefix the prefix to search for
+   *
+   * @param node         the note that contains the attributes
+   * @param prefix       the prefix to search for
    * @param removePrefix true: removes the prefix from attribute name (name is the key of resulting map)
    * @return the values or a empty map
    */
@@ -55,7 +55,7 @@ public class ZJXmlUtils {
 
   /**
    * Get all attributes as a Map from a node
-   * 
+   *
    * @param node the node taht contains the attributes to read
    * @return the values or a empty map
    */
@@ -72,7 +72,7 @@ public class ZJXmlUtils {
 
   /**
    * Get the first node with a given name and returns it
-   * 
+   *
    * @param root the node that contains the children to search within
    * @param name the name of the node
    * @return a node with given or null if not found

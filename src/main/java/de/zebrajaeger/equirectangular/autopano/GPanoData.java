@@ -14,13 +14,7 @@
  */
 package de.zebrajaeger.equirectangular.autopano;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import de.zebrajaeger.equirectangular.util.ZJXmlUtils;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -30,13 +24,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import de.zebrajaeger.equirectangular.util.ZJXmlUtils;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * A wrapper for the XMP-Data that Autopano normally puts into a rendered panoramic image
- * 
- * @author Lars Brandt
  *
+ * @author Lars Brandt
  */
 public class GPanoData {
 
@@ -55,11 +54,8 @@ public class GPanoData {
 
   /**
    * Changes the bytes into ascii string and pares it as a XML-document
-   * 
+   *
    * @param data the data to parse
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws IOException
    */
   protected void parse(byte[] data) throws ParserConfigurationException, SAXException, IOException {
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -86,13 +82,20 @@ public class GPanoData {
     usePanoramaViewer = parseBoolean(a, "UsePanoramaViewer");
     projectionType = parseString(a, "ProjectionType");
     croppedAreaLeftPixels = parseInt(a, "CroppedAreaLeftPixels");
-    stitchingSoftware = parseString(a, "StitchingSoftware");;
-    croppedAreaImageWidthPixels = parseInt(a, "CroppedAreaImageWidthPixels");;
-    sourcePhotosCount = parseInt(a, "SourcePhotosCount");;
-    croppedAreaTopPixels = parseInt(a, "CroppedAreaTopPixels");;
-    croppedAreaImageHeightPixels = parseInt(a, "CroppedAreaImageHeightPixels");;
-    fullPanoWidthPixels = parseInt(a, "FullPanoWidthPixels");;
-    fullPanoHeightPixels = parseInt(a, "FullPanoHeightPixels");;
+    stitchingSoftware = parseString(a, "StitchingSoftware");
+    ;
+    croppedAreaImageWidthPixels = parseInt(a, "CroppedAreaImageWidthPixels");
+    ;
+    sourcePhotosCount = parseInt(a, "SourcePhotosCount");
+    ;
+    croppedAreaTopPixels = parseInt(a, "CroppedAreaTopPixels");
+    ;
+    croppedAreaImageHeightPixels = parseInt(a, "CroppedAreaImageHeightPixels");
+    ;
+    fullPanoWidthPixels = parseInt(a, "FullPanoWidthPixels");
+    ;
+    fullPanoHeightPixels = parseInt(a, "FullPanoHeightPixels");
+    ;
   }
 
   protected static String parseString(HashMap<String, String> map, String name) {
@@ -127,7 +130,6 @@ public class GPanoData {
     }
     return null;
   }
-
 
 
   public Boolean getUsePanoramaViewer() {
@@ -176,8 +178,9 @@ public class GPanoData {
   }
 
   public static class Builder {
+
     public static GPanoData buildFrombytes(byte[] content) throws ParserConfigurationException, SAXException,
-        IOException {
+                                                                  IOException {
       final GPanoData res = new GPanoData();
       res.parse(content);
       return res;

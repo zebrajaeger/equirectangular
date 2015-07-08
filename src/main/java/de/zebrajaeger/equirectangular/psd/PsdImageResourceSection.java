@@ -15,15 +15,15 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import de.zebrajaeger.equirectangular.autopano.GPanoData;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import java.io.IOException;
 import java.util.LinkedList;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
-
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
-import de.zebrajaeger.equirectangular.autopano.GPanoData;
 
 public class PsdImageResourceSection implements IPsdMetaDataPart {
 
@@ -49,7 +49,7 @@ public class PsdImageResourceSection implements IPsdMetaDataPart {
 
     if (size > 0) {
       long temp = 1;
-      for (; temp < size;) {
+      for (; temp < size; ) {
         final PsdImageResourceBlock irb = new PsdImageResourceBlock();
         final long bytes = irb.read(is);
         blocks.add(irb);

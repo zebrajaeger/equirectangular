@@ -13,12 +13,13 @@ public class FileDropper extends JDialog {
   /**
    *
    */
-  private final FileDropTarget_ dropTarget;
+  private final FileDropTarget dropTarget;
 
   public FileDropper() {
     super();
     setTitle("equirectangular");
     setSize(200, 200);
+    setResizable(false);
     setAlwaysOnTop(true);
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -30,22 +31,8 @@ public class FileDropper extends JDialog {
     add(createLabel(" "));
     add(createLabel("here"));
 
-    dropTarget = new FileDropTarget_();
+    dropTarget = new FileDropTarget();
     setDropTarget(dropTarget);
-    dropTarget.addListener(new IFileDropListener() {
-      @Override
-      public boolean onAcceptDrop(List<File> files) {
-        // accept all
-        return true;
-      }
-
-      @Override
-      public void onDrop(List<File> files) {
-        for (File f : files) {
-          System.out.println(f);
-        }
-      }
-    });
 
     setVisible(true);
   }

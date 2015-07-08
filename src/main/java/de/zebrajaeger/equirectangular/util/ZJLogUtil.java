@@ -22,17 +22,13 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 /**
- * 
  * @author lars Brandt
- *
  */
 public class ZJLogUtil {
 
   /**
-   * change the loglevel of log4j2 for the root logger directly.<br>
-   * Got this snipped from here: http://stackoverflow.com/questions/23434252/programmatically-change-log-level-in-log4j2
-   * 
-   * 
+   * change the loglevel of log4j2 for the root logger directly.<br> Got this snipped from here: http://stackoverflow.com/questions/23434252/programmatically-change-log-level-in-log4j2
+   *
    * @param level the new loglevel
    */
   public static void changeLogLevel(Level level) {

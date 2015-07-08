@@ -15,24 +15,23 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import de.zebrajaeger.equirectangular.psd.PsdHeader.MODE;
+import de.zebrajaeger.equirectangular.psd.PsdHeader.VERSION;
+import de.zebrajaeger.equirectangular.psd.PsdImageData.TYPE;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import java.io.IOException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
-import de.zebrajaeger.equirectangular.psd.PsdHeader.MODE;
-import de.zebrajaeger.equirectangular.psd.PsdHeader.VERSION;
-import de.zebrajaeger.equirectangular.psd.PsdImageData.TYPE;
-
 
 /**
  * see https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
- * 
- * @author Lars Brandt
  *
+ * @author Lars Brandt
  */
 public class PsdImg {
 
@@ -42,7 +41,8 @@ public class PsdImg {
   private PsdLayerAndMaskInformation layerAndMask;
   private PsdImageData imgData;
 
-  public PsdImg() {}
+  public PsdImg() {
+  }
 
   public PsdImg(FileImageInputStream is) throws IOException {
     prepareRead(is);
@@ -133,6 +133,7 @@ public class PsdImg {
   }
 
   public static class Builder {
+
     public static PsdImg buildPsd(int w, int h) {
       final VERSION v = VERSION.PSD;
       final PsdImg img = new PsdImg();

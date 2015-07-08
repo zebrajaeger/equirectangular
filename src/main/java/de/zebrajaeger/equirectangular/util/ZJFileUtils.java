@@ -16,19 +16,15 @@
 package de.zebrajaeger.equirectangular.util;
 
 /**
- * 
  * @author Lars Brandt
- *
  */
 public class ZJFileUtils {
 
   /**
-   * Make a String from a filesize in a human readable manner.<br>
-   * Got this snipped from here:
-   * http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
-   * 
+   * Make a String from a filesize in a human readable manner.<br> Got this snipped from here: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+   *
    * @param size the size of a file (or something else)
-   * @param si (the type 100 or 1024 based)
+   * @param si   (the type 100 or 1024 based)
    */
   public static String humanReadableByteCount(long size, boolean si) {
     final int unit = si ? 1000 : 1024;

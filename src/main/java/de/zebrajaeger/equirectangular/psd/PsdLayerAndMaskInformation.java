@@ -15,15 +15,15 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import de.zebrajaeger.equirectangular.psd.PsdHeader.VERSION;
+import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import java.io.IOException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
-
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
-import de.zebrajaeger.equirectangular.psd.PsdHeader.VERSION;
-import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
 
 public class PsdLayerAndMaskInformation implements IPsdMetaDataPart {
 
@@ -31,7 +31,8 @@ public class PsdLayerAndMaskInformation implements IPsdMetaDataPart {
   private byte[] data = new byte[0];
   private PsdHeader.VERSION version = VERSION.PSD;
 
-  public PsdLayerAndMaskInformation() {}
+  public PsdLayerAndMaskInformation() {
+  }
 
   public PsdLayerAndMaskInformation(PsdHeader.VERSION version) {
     this.version = version;

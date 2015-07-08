@@ -10,13 +10,14 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * @author Lars Brandt
  */
 public class FileDropTarget extends DropTarget {
+
   private static final Logger LOG = LogManager.getLogger(FileDropTarget.class);
 
   private List<IFileDropListener> listeners = new ArrayList<>();
@@ -56,7 +57,8 @@ public class FileDropTarget extends DropTarget {
     try {
       event.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
       List<File> droppedFiles = castFileList(event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
-      if(canAccept(droppedFiles)){
+      droppedFiles = Collections.unmodifiableList(droppedFiles);
+      if (canAccept(droppedFiles)) {
         onAccept(droppedFiles);
       }
     } catch (Exception e) {
@@ -65,7 +67,7 @@ public class FileDropTarget extends DropTarget {
   }
 
   @SuppressWarnings("unchecked")
-  private static List<File> castFileList(Object o){
+  private static List<File> castFileList(Object o) {
     return (List<File>) o;
   }
 

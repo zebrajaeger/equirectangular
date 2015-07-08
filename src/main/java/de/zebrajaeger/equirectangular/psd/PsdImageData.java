@@ -15,14 +15,15 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import java.io.IOException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
 public class PsdImageData {
+
   private TYPE type;
   private FileImageInputStream is = null;
   private FileImageOutputStream os = null;
@@ -99,7 +100,6 @@ public class PsdImageData {
       os.close();
     }
   }
-
 
 
   public TYPE getType() {

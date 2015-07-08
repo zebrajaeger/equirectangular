@@ -15,14 +15,14 @@
 
 package de.zebrajaeger.equirectangular.psd;
 
+import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 import java.io.IOException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
-
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
-import de.zebrajaeger.equirectangular.util.ZJArrayUtils;
 
 public class PsdColorModeData implements IPsdMetaDataPart {
 
