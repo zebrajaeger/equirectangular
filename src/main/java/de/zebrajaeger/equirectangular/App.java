@@ -17,6 +17,7 @@ package de.zebrajaeger.equirectangular;
 import de.zebrajaeger.equirectangular.autopano.GPanoData;
 import de.zebrajaeger.equirectangular.psd.PsdImageData;
 import de.zebrajaeger.equirectangular.psd.PsdImg;
+import de.zebrajaeger.equirectangular.render.RenderParameters;
 import de.zebrajaeger.equirectangular.ui.FileDropper;
 import de.zebrajaeger.equirectangular.ui.IFileDropListener;
 import de.zebrajaeger.equirectangular.util.ZJFileUtils;
