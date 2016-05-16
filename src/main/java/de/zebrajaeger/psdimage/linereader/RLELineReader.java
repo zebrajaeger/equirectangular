@@ -1,6 +1,5 @@
 package de.zebrajaeger.psdimage.linereader;
 
-import com.twelvemonkeys.io.enc.PackBitsDecoder;
 import de.zebrajaeger.psdimage.DecoratedInputStream;
 
 import java.io.IOException;
@@ -17,12 +16,12 @@ public class RLELineReader extends LineReader {
     }
 
     @Override
-    public void readLine(ByteBuffer buffer) throws IOException {
+    public DecodeResult readLine(ByteBuffer buffer) throws IOException {
         if (buffer.capacity() != getLineSize()) {
             throw new IllegalArgumentException("buffersize (" + buffer.capacity() + ") must match linesize (" + getLineSize() + ")");
         }
 
         buffer.clear();
-        dec.decode(getInputStream().getInputStream(), buffer);
+        return dec.decode(getInputStream().getInputStream(), buffer);
     }
 }

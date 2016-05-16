@@ -17,7 +17,7 @@ public abstract class LineReader {
         this.lineSize = lineSize;
     }
 
-    public abstract void readLine(ByteBuffer buffer) throws IOException;
+    public abstract DecodeResult readLine(ByteBuffer buffer) throws IOException;
 
     public int getLineSize() {
         return lineSize;

@@ -2,6 +2,7 @@ package de.zebrajaeger.psdimage;
 
 import de.zebrajaeger.psdimage.autopano.GPanoData;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -13,23 +14,21 @@ public class ResourceSection {
     private long size = 0;
     private final LinkedList<ResourceBlock> blocks = new LinkedList<>();
 
-    public long read(DecoratedInputStream is) throws IOException {
-        long res = 0;
-        size = is.readInt();
-        res += 4;
 
-        if (size > 0) {
-            long temp = 1;
-            for (; temp < size; ) {
+    public ResourceSection(byte[] data) {
+        DecoratedInputStream is = new DecoratedInputStream(new ByteArrayInputStream(data));
+
+        try {
+            // minimum header size at lease 10 bytes
+            while (is.available() > 10) {
+                System.out.println("red resourceblocck. available: " + is.available());
                 final ResourceBlock irb = new ResourceBlock();
-                final long bytes = irb.read(is);
+                irb.read(is);
                 blocks.add(irb);
-                res += bytes;
-                temp += bytes;
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return res;
     }
 
     public GPanoData getGPanoData() {

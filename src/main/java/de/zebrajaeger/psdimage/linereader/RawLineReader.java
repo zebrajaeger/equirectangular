@@ -15,12 +15,13 @@ public class RawLineReader extends LineReader {
     }
 
     @Override
-    public void readLine(ByteBuffer buffer) throws IOException {
+    public DecodeResult readLine(ByteBuffer buffer) throws IOException {
         if (buffer.capacity() != getLineSize()) {
             throw new IllegalArgumentException("buffersize (" + buffer.capacity() + ") must match linesize (" + getLineSize() + ")");
         }
 
         buffer.clear();
-        getInputStream().read(buffer.array());
+        int total = getInputStream().read(buffer.array());
+        return new DecodeResult(total, total);
     }
 }

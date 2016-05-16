@@ -27,7 +27,7 @@ public class EquirectagularConverter {
 
     public EquirectagularConverter(File sourceFile) {
         this.sourceFile = sourceFile;
-        this.destinationFile = FileUtils.addPostfix(sourceFile, "_full");
+        this.destinationFile = FileUtils.addPostfix(sourceFile, "_equirectagular");
     }
 
     public void process(boolean dryRun) throws IOException {
