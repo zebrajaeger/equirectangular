@@ -61,7 +61,7 @@
 			<version>2.3</version>
 		</dependency>
 
-
+		<!--
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-core</artifactId>
@@ -73,7 +73,7 @@
 			<artifactId>imageio-psd</artifactId>
 			<version>3.2.1</version>
 		</dependency>
-
+		-->
 
 		<!-- TESTING -->
 		<dependency>

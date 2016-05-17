@@ -1,6 +1,6 @@
 package de.zebrajaeger.psdimage.linewriter;
 
-import com.twelvemonkeys.io.enc.PackBitsEncoder;
+//import com.twelvemonkeys.io.enc.PackBitsEncoder;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public class RLELineWriter extends LineWriter {
 
-    private PackBitsEncoder encoder = new PackBitsEncoder();
+    // private PackBitsEncoder encoder = new PackBitsEncoder();
 
     public RLELineWriter(OutputStream outputStream, int lineSize) {
         super(outputStream, lineSize);
@@ -23,7 +23,7 @@ public class RLELineWriter extends LineWriter {
             throw new IllegalArgumentException("bufferposition (" + buffer.position() + ") must match linesize (" + getLineSize() + ")");
         }
 
-        encoder.encode(getOutputStream(), buffer);
+        //   encoder.encode(getOutputStream(), buffer);
 
     }
 }
