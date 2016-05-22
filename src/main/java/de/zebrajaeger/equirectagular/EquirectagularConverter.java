@@ -18,16 +18,21 @@ import java.util.Arrays;
  */
 public class EquirectagularConverter {
     private File sourceFile;
-    private File destinationFile;
+    private File targetFile;
 
-    public EquirectagularConverter(File sourceFile, File destinationFile) {
+    public EquirectagularConverter(File sourceFile, File targetFile) {
         this.sourceFile = sourceFile;
-        this.destinationFile = destinationFile;
+        this.targetFile = targetFile;
     }
 
     public EquirectagularConverter(File sourceFile) {
         this.sourceFile = sourceFile;
-        this.destinationFile = FileUtils.addPostfix(sourceFile, "_equirectagular");
+        this.targetFile = FileUtils.addPostfix(sourceFile, "_equirectangular");
+        this.targetFile = FileUtils.normalizeName(this.targetFile);
+    }
+
+    public boolean euirectangularFileExists() {
+        return targetFile.exists();
     }
 
     public void process(boolean dryRun) throws IOException {
@@ -67,10 +72,10 @@ public class EquirectagularConverter {
                 throw new IllegalStateException(msg);
             }
 
-            if (destinationFile.exists()) {
-                destinationFile.delete();
+            if (targetFile.exists()) {
+                targetFile.delete();
             }
-            WritablePsdImage destination = new WritablePsdImage(destinationFile);
+            WritablePsdImage destination = new WritablePsdImage(targetFile);
             destination.open();
             destination.readValuesFrom(source);
             destination.setWidth(fullWidth);
@@ -120,6 +125,14 @@ public class EquirectagularConverter {
             destination.close();
         }
         source.close();
+    }
+
+    public File getSourceFile() {
+        return sourceFile;
+    }
+
+    public File getTargetFile() {
+        return targetFile;
     }
 
     protected void printState(int lines, int currentLine) {

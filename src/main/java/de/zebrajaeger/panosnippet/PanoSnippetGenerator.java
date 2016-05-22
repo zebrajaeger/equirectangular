@@ -28,9 +28,10 @@ public class PanoSnippetGenerator {
     public PanoSnippetGenerator(File sourceFile) {
         this.sourceFile = sourceFile;
         this.targetFile = FileUtils.replaceDotAndExtension(sourceFile, "_snippet.txt");
+        this.targetFile = FileUtils.normalizeName(this.targetFile);
     }
 
-    public void process() throws IOException {
+    public ViewRange process() throws IOException {
         ReadablePsdImage source = new ReadablePsdImage(sourceFile);
         source.open();
         source.readHeader();
@@ -59,26 +60,28 @@ public class PanoSnippetGenerator {
         //int marginTop = (fullHeigth - source.getHeigth()) / 2;
         int marginBottom = fullHeigth - source.getHeigth() - marginTop;
 
-        String snippet = createSnippet(fovLeft, fovRight, fovTop, fovBottom);
+        ViewRange viewRange = new ViewRange(fovLeft, fovRight, fovTop, fovBottom);
+        String snippet = createSnippet(viewRange);
 
         FileUtils.storeInFile(targetFile, snippet);
 
         System.out.println(snippet);
+        return viewRange;
     }
 
-    protected String createSnippet(double fovLeft, double fovRight, double fovTop, double fovBottom) {
+    protected String createSnippet(ViewRange range) {
         final StringBuilder sb = new StringBuilder();
         sb.append("<krpano version=\"1.18\" showerrors=\"false\">").append(CRLF);
         sb.append(CRLF);
         sb.append("<view").append(CRLF);
         sb.append(makeArg("limitview", "range"));
 
-        sb.append(makeArg("hlookatmin", Double.toString(fovLeft * 360)));
-        sb.append(makeArg("hlookatmax", Double.toString(fovRight * 360)));
+        sb.append(makeArg("hlookatmin", Double.toString(range.getFovLeft() * 360)));
+        sb.append(makeArg("hlookatmax", Double.toString(range.getFovRight() * 360)));
 
         // TODO why it has to be negative? something is wrong but result is ok
-        sb.append(makeArg("vlookatmin", Double.toString(-fovTop * 180)));
-        sb.append(makeArg("vlookatmax", Double.toString(-fovBottom * 180)));
+        sb.append(makeArg("vlookatmin", Double.toString(-range.getFovTop() * 180)));
+        sb.append(makeArg("vlookatmax", Double.toString(-range.getFovBottom() * 180)));
 
         sb.append(makeArg("hlookat", "0"));
         sb.append(makeArg("vlookat", "0"));

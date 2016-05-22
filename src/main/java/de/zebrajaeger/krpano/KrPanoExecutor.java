@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * Due to the strange implementation of console output, this is only a starter that waits until
+ * the process name does not appera in the system process list
+ *
  * Created by lars on 21.05.2016.
  */
 public class KrPanoExecutor {
@@ -26,6 +29,13 @@ public class KrPanoExecutor {
                 krpanoConfigFile.toString(),
                 path.toString()
         };
+
+        System.out.print("exec: '");
+        for (String s : cmd) {
+            System.out.print("\"" + s + "\" ");
+        }
+        System.out.print("'");
+
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(krpanoPath.getParentFile());
         pb = pb.redirectErrorStream(true);
@@ -33,6 +43,17 @@ public class KrPanoExecutor {
 
         p.waitFor();
 
+        // wait max 10 s for spawned process
+        for (int t = 0; t < 10; ++t) {
+            ProcessUtils.ProcessLine krpanotools = ProcessUtils.tasklist().findByName("krpanotools", false);
+            if (krpanotools != null) {
+                break;
+            } else {
+                Thread.sleep(1000);
+            }
+        }
+
+        // wait until process has been gone
         for (; ; ) {
             ProcessUtils.ProcessLine krpanotools = ProcessUtils.tasklist().findByName("krpanotools", false);
             if (krpanotools == null) {

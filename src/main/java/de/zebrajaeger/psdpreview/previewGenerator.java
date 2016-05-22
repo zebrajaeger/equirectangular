@@ -20,16 +20,21 @@ public class PreviewGenerator {
     private File targetFile;
 
     private int maxTargetWidth = 2048;
-    private int maxTargetheight = 2048;
+    private int maxTargetHeight = 2048;
 
     public PreviewGenerator(File sourceFile) {
         this.sourceFile = sourceFile;
         this.targetFile = FileUtils.replaceDotAndExtension(sourceFile, "_preview.jpg");
+        this.targetFile = FileUtils.normalizeName(this.targetFile);
     }
 
     public PreviewGenerator(File sourceFile, File targetFile) {
         this.sourceFile = sourceFile;
         this.targetFile = targetFile;
+    }
+
+    public boolean previewExists() {
+        return targetFile.exists();
     }
 
     public void process() throws IOException {
@@ -50,7 +55,7 @@ public class PreviewGenerator {
 
         // destination
         float aspectW = (float) width / (float) maxTargetWidth;
-        float aspectH = (float) height / (float) maxTargetheight;
+        float aspectH = (float) height / (float) maxTargetHeight;
         float aspect = Math.max(aspectW, aspectH);
         float targetW = (float) width / aspect;
         float targetH = (float) height / aspect;

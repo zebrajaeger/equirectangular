@@ -1,8 +1,13 @@
 package de.zebrajaeger.ui;
 
+import de.zebrajaeger.common.FileUtils;
+import de.zebrajaeger.common.ZipUtils;
 import de.zebrajaeger.equirectagular.EquirectagularConverter;
 import de.zebrajaeger.imgremove.PanoTilesCleaner;
+import de.zebrajaeger.krpano.KrPanoConfigFile;
+import de.zebrajaeger.krpano.KrPanoExecutor;
 import de.zebrajaeger.panosnippet.PanoSnippetGenerator;
+import de.zebrajaeger.panosnippet.ViewRange;
 import de.zebrajaeger.psdpreview.PreviewGenerator;
 
 import javax.swing.*;
@@ -25,8 +30,8 @@ public class FileDropDialog extends JDialog {
 
     public FileDropDialog() {
         setUndecorated(true);
-        setSize(100, 100);
-        setLayout(new GridLayout(2, 2));
+        setSize(250, 50);
+        setLayout(new GridLayout(1, 5));
         setAlwaysOnTop(true);
         setResizable(false);
         setAlwaysOnTop(true);
@@ -36,6 +41,7 @@ public class FileDropDialog extends JDialog {
         add(createPreviewButton());
         add(createCleanButton());
         add(createSnippetButton());
+        add(createAllInOneButton());
     }
 
     private JButton createButton(String label) {
@@ -44,6 +50,80 @@ public class FileDropDialog extends JDialog {
         button.setMargin(new Insets(1, 1, 1, 1));
         return button;
     }
+
+    protected JButton createAllInOneButton() {
+        JButton button = createButton("<html>All</html>");
+        button.addActionListener(new CloseListener(this));
+        PsdDropTarget dropTarget = new PsdDropTarget() {
+            @Override
+            public void onPsdFile(final File file) {
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // make Snippet
+                            PanoSnippetGenerator snippet = new PanoSnippetGenerator(file);
+                            ViewRange viewRange = snippet.process();
+
+                            // make preview
+                            PreviewGenerator preview = new PreviewGenerator(file);
+                            if (!preview.previewExists()) {
+                                preview.process();
+                            }
+
+                            // make equirectangular image
+                            EquirectagularConverter equirectangular = new EquirectagularConverter(file);
+
+                            File equiRectFile = equirectangular.getTargetFile();
+                            if (!equirectangular.euirectangularFileExists()) {
+                                equirectangular.process(false);
+                            }
+
+                            // delete previous output
+                            String fileName = FileUtils.getFileNameWithoutExtension(equiRectFile);
+                            File oldArtefactDir = FileUtils.findDirectoryThatNameContains(equiRectFile.getParentFile(), fileName);
+                            if (oldArtefactDir != null) {
+                                FileUtils.deleteRecursive(oldArtefactDir);
+                            }
+
+                            // exec krpano
+                            // TODO use properties
+                            File krPano = new File("C:\\portableapps\\krpano-1.18.4\\krpanotools64.exe");
+                            File krpanoConfigFile = new File("C:\\portableapps\\krpano-1.18.4\\templates\\multires.config");
+                            KrPanoExecutor krpano = new KrPanoExecutor(krPano, krpanoConfigFile);
+                            krpano.processImage(equiRectFile);
+
+                            // delete unneeded tiles
+                            File artefactDir = FileUtils.findDirectoryThatNameContains(equiRectFile.getParentFile(), fileName);
+                            PanoTilesCleaner cleaner = new PanoTilesCleaner(artefactDir);
+                            cleaner.process();
+
+                            // change pano config xml
+                            //File artefactDir = new File("R:\\TEMP\\result-test_equirectagular");
+                            File config = FileUtils.findFileThatNameContains(artefactDir, ".xml");
+                            if (config != null) {
+                                KrPanoConfigFile krPanoConfigFile = new KrPanoConfigFile(config);
+                                krPanoConfigFile.load();
+                                krPanoConfigFile.setShowErrors(false);
+                                krPanoConfigFile.setView(viewRange);
+                                krPanoConfigFile.save();
+                            }
+
+                            // zip dir
+                            File zipFile = new File(artefactDir.getParentFile(), artefactDir.getName() + ".zip");
+                            ZipUtils.compressZipFile(artefactDir, zipFile);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+        button.setDropTarget(dropTarget);
+        return button;
+    }
+
 
     protected JButton createEquirectButton() {
         JButton button = createButton("<html>Equi<br>rect</html>");
@@ -139,5 +219,4 @@ public class FileDropDialog extends JDialog {
         button.setDropTarget(dropTarget);
         return button;
     }
-
 }

@@ -9,6 +9,71 @@ import java.io.IOException;
  */
 public class FileUtils {
 
+    public static String normalizeName(String toNormalize) {
+        return toNormalize.replaceAll("[\\s=\\.]", "_");
+    }
+
+    public static String normalizeFileName(String toNormalize) {
+        int pos = toNormalize.lastIndexOf(".");
+        String name = toNormalize;
+        String ext = "";
+        if (pos != -1) {
+            name = toNormalize.substring(0, pos);
+            ext = toNormalize.substring(pos);
+        }
+        return normalizeName(name) + ext;
+    }
+
+    public static File normalizeName(File toNormalize) {
+        String name = toNormalize.getName();
+        name = normalizeFileName(name);
+        return new File(toNormalize.getParentFile(), name);
+    }
+
+    public static void deleteRecursive(File toDelete) {
+        if (toDelete.isFile()) {
+            toDelete.delete();
+        } else if (toDelete.isDirectory()) {
+            for (File f : toDelete.listFiles()) {
+                deleteRecursive(f);
+            }
+        }
+    }
+
+    public static File findDirectoryThatNameContains(File parent, String part) {
+        for (File f : parent.listFiles()) {
+            if (f.isDirectory()) {
+                String name = f.getName();
+                if (name.toLowerCase().contains(part.toLowerCase())) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static File findFileThatNameContains(File parent, String part) {
+        for (File f : parent.listFiles()) {
+            if (f.isFile()) {
+                String name = f.getName();
+                if (name.toLowerCase().contains(part.toLowerCase())) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String getFileNameWithoutExtension(File file) {
+        String name = file.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot >= 0) {
+            return name.substring(0, dot);
+        } else {
+            return name;
+        }
+    }
+
     /**
      * cretaes a new file with the same parent and the same name, but the name get a postfix by parameter
      *
