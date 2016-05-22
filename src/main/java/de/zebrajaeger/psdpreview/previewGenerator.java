@@ -37,6 +37,22 @@ public class PreviewGenerator {
         return targetFile.exists();
     }
 
+    public File getSourceFile() {
+        return sourceFile;
+    }
+
+    public File getTargetFile() {
+        return targetFile;
+    }
+
+    public int getMaxTargetWidth() {
+        return maxTargetWidth;
+    }
+
+    public int getMaxTargetHeight() {
+        return maxTargetHeight;
+    }
+
     public void process() throws IOException {
 
         // source
@@ -111,4 +127,6 @@ public class PreviewGenerator {
         BufferedImage img = target.createImage();
         ImageIO.write(img, "JPEG", targetFile);
     }
+
+
 }

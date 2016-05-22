@@ -1,6 +1,7 @@
 package de.zebrajaeger.ui;
 
 import de.zebrajaeger.common.FileUtils;
+import de.zebrajaeger.common.PanoNameUtils;
 import de.zebrajaeger.common.ZipUtils;
 import de.zebrajaeger.equirectagular.EquirectagularConverter;
 import de.zebrajaeger.imgremove.PanoTilesCleaner;
@@ -13,6 +14,7 @@ import de.zebrajaeger.psdpreview.PreviewGenerator;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -109,10 +111,13 @@ public class FileDropDialog extends JDialog {
                                 krPanoConfigFile.save();
                             }
 
-                            // zip dir
-                            File zipFile = new File(artefactDir.getParentFile(), artefactDir.getName() + ".zip");
-                            ZipUtils.compressZipFile(artefactDir, zipFile);
+                            // copy preview#
+                            Files.copy(preview.getTargetFile().toPath(), new File(artefactDir, "preview.jpg").toPath());
 
+                            // zip dir
+                            String simpleName = PanoNameUtils.extractFirstImageName(artefactDir.getName());
+                            File zipFile = new File(artefactDir.getParentFile(), simpleName + ".zip");
+                            ZipUtils.compressDirectory(artefactDir, zipFile, simpleName);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
