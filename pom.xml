@@ -26,7 +26,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<MainClass>de.zebrajaeger.equirectangular.App</MainClass>
+		<mainClass>FileDropDialog</mainClass>
 	</properties>
 
 	<dependencies>
