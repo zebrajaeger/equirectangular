@@ -47,7 +47,6 @@ public class PreviewData {
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 PreviewPixel pixel = data[(y * width) + x];
-                ;
                 pixBuf[0] = pixel.getR().getNormalizedIntValue();
                 pixBuf[1] = pixel.getG().getNormalizedIntValue();
                 pixBuf[2] = pixel.getB().getNormalizedIntValue();
