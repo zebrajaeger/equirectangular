@@ -13,7 +13,7 @@ public class PsdImage {
     private int version = 2;
     private byte[] reserved = new byte[6];
     private int channels = 4;
-    private long heigth;
+    private long height;
     private long width;
     private int depth = 8;
     private int colorMode = 3;
@@ -30,7 +30,7 @@ public class PsdImage {
         version = o.version;
         reserved = o.reserved.clone();
         channels = o.channels;
-        heigth = o.heigth;
+        height = o.height;
         width = o.width;
         depth = o.depth;
         colorMode = o.colorMode;
@@ -44,8 +44,8 @@ public class PsdImage {
         return (int) width;
     }
 
-    public int getHeigth() {
-        return (int) heigth;
+    public int getHeight() {
+        return (int) height;
     }
 
     public boolean isPSB() {
@@ -112,8 +112,8 @@ public class PsdImage {
         this.channels = channels;
     }
 
-    public void setHeigth(long heigth) {
-        this.heigth = heigth;
+    public void setHeight(long height) {
+        this.height = height;
     }
 
     public void setWidth(long width) {
@@ -154,7 +154,7 @@ public class PsdImage {
                 "id='" + id + '\'' +
                 ", version=" + version +
                 ", channels=" + channels +
-                ", height=" + heigth +
+                ", height=" + height +
                 ", width=" + width +
                 ", depth=" + depth +
                 ", colorMode=" + colorMode +

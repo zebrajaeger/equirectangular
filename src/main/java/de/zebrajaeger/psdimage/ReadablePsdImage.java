@@ -52,7 +52,7 @@ public class ReadablePsdImage extends PsdImage {
         setVersion(is.readShort());
         setReserved(is.readBytes(6));
         setChannels(is.readShort());
-        setHeigth(is.readInt());
+        setHeight(is.readInt());
         setWidth(is.readInt());
         setDepth(is.readShort());
         setColorMode(is.readShort());
@@ -80,7 +80,7 @@ public class ReadablePsdImage extends PsdImage {
         if (getCompression() == 0) {
             lineReader = new RawLineReader(getInputStream(), (int) getWidth());
         } else if (getCompression() == 1) {
-            compressionLineSizes = is.readInts((int) (getChannels() * getHeigth()));
+            compressionLineSizes = is.readInts((int) (getChannels() * getHeight()));
             lineReader = new RLELineReader(getInputStream(), (int) getWidth());
         } else {
             lineReader = null;
@@ -106,7 +106,7 @@ public class ReadablePsdImage extends PsdImage {
                 result += s;
             }
         } else {
-            result = getWidth() * getHeigth() * getChannels();
+            result = getWidth() * getHeight() * getChannels();
         }
 
         return result;

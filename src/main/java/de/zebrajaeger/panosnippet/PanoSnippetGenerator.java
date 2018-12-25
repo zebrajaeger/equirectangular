@@ -50,15 +50,15 @@ public class PanoSnippetGenerator {
 
         // HeigthCalculatio
         int fullHeigth = fullWidth / 2;
-        double fovHeight = source.getHeigth();
+        double fovHeight = source.getHeight();
         fovHeight /= fullHeigth;
         double fovHeightOffset = panoData.getCroppedAreaTopPixels();
         fovHeightOffset /= panoData.getFullPanoHeightPixels();
         double fovTop = ((double) 0.5) - fovHeightOffset;
         double fovBottom = -(fovHeight - fovTop);
         int marginTop = (int) (fullHeigth * fovHeightOffset);
-        //int marginTop = (fullHeigth - source.getHeigth()) / 2;
-        int marginBottom = fullHeigth - source.getHeigth() - marginTop;
+        //int marginTop = (fullHeigth - source.getHeight()) / 2;
+        int marginBottom = fullHeigth - source.getHeight() - marginTop;
 
         ViewRange viewRange = new ViewRange(fovLeft, fovRight, fovTop, fovBottom);
         String snippet = createSnippet(viewRange);

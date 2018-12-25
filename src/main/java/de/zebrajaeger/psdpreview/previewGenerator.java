@@ -64,7 +64,7 @@ public class PreviewGenerator {
 
         LineReader lineReader = source.getLineReader();
 
-        int height = source.getHeigth();
+        int height = source.getHeight();
         int width = source.getWidth();
         ByteBuffer line = ByteBuffer.allocate(width);
         byte[] rawLine = line.array();

@@ -41,7 +41,7 @@ public class WritablePsdImage extends PsdImage {
         outputStream.writeUnsignedShort(getVersion());
         outputStream.writeBytes(getReserved());
         outputStream.writeUnsignedShort(getChannels());
-        outputStream.writeUnsignedInt(getHeigth());
+        outputStream.writeUnsignedInt(getHeight());
         outputStream.writeUnsignedInt(getWidth());
         outputStream.writeUnsignedShort(getDepth());
         outputStream.writeUnsignedShort(getColorMode());

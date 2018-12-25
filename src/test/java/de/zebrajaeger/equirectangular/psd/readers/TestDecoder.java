@@ -160,7 +160,7 @@ public class TestDecoder {
         LineReader lineReader = img.getLineReader();
         ByteBuffer buffer = ByteBuffer.allocate(img.getWidth());
 
-        int l = img.getHeigth() * img.getChannels();
+        int l = img.getHeight() * img.getChannels();
         for(int i=0; i<l; ++i){
             lineReader.readLine(buffer);
             System.out.println(img.getInputStream().available());

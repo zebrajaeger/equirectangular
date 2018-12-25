@@ -54,15 +54,15 @@ public class EquirectagularConverter {
 
         // HeigthCalculatio
         int fullHeigth = fullWidth / 2;
-        double fovHeight = source.getHeigth();
+        double fovHeight = source.getHeight();
         fovHeight /= fullHeigth;
         double fovHeightOffset = panoData.getCroppedAreaTopPixels();
         fovHeightOffset /= panoData.getFullPanoHeightPixels();
         double fovTop = ((double) 0.5) - fovHeightOffset;
         double fovBottom = -(fovHeight - fovTop);
         int marginTop = (int) (fullHeigth * fovHeightOffset);
-        //int marginTop = (fullHeigth - source.getHeigth()) / 2;
-        int marginBottom = fullHeigth - source.getHeigth() - marginTop;
+        //int marginTop = (fullHeigth - source.getHeight()) / 2;
+        int marginBottom = fullHeigth - source.getHeight() - marginTop;
 
         if (!dryRun) {
             LineReader lineReader = source.getLineReader();
@@ -79,7 +79,7 @@ public class EquirectagularConverter {
             destination.open();
             destination.readValuesFrom(source);
             destination.setWidth(fullWidth);
-            destination.setHeigth(fullHeigth);
+            destination.setHeight(fullHeigth);
             destination.setCompression(0);
             destination.writeHeader();
             LineWriter lineWriter = destination.getLineWriter();
@@ -91,7 +91,7 @@ public class EquirectagularConverter {
             }
 
             // copy image data
-            int lines = destination.getHeigth() * destination.getChannels();
+            int lines = destination.getHeight() * destination.getChannels();
             int currentLine = 0;
             for (int channel = 0; channel < source.getChannels(); ++channel) {
 
@@ -104,7 +104,7 @@ public class EquirectagularConverter {
                 }
 
                 // copy content
-                for (int i = 0; i < source.getHeigth(); ++i) {
+                for (int i = 0; i < source.getHeight(); ++i) {
                     lineReader.readLine(readBuffer);
                     Arrays.fill(writeBuffer.array(), (byte) 0);
                     System.arraycopy(readBuffer.array(), 0, writeBuffer.array(), marginLeft, readBuffer.array().length);
