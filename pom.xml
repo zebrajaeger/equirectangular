@@ -7,8 +7,8 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
 
-    <description>TODO</description>
-    <url>TODO</url>
+    <description>Embeds PSBs (rendered images from Autopano) into a bigger PSB that has equirectaguular size (2:1) an can be processed by krpano.</description>
+    <url>https://github.com/zebrajaeger/equirectangular</url>
 
     <licenses>
         <license>
@@ -78,6 +78,20 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.16</version>
+                <configuration>
+                    <verbose>false</verbose>
+                    <addSvnKeyWords>true</addSvnKeyWords>
+                    <licenseName>lgpl_v3</licenseName>
+                    <organizationName>Lars Brandt</organizationName>
+                    <inceptionYear>2016</inceptionYear>
+                    <addSvnKeyWords>false</addSvnKeyWords>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
