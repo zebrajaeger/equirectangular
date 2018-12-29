@@ -24,12 +24,13 @@ package de.zebrajaeger.equirectangular.core.panosnippet;
 
 import com.drew.imaging.ImageProcessingException;
 import de.zebrajaeger.equirectangular.core.ViewCalculator;
+import de.zebrajaeger.equirectangular.core.common.NoDataException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /**
  * a generator that creates a file with a view snippet for krpano view control
@@ -41,69 +42,64 @@ public class PanoSnippetGenerator {
     private static String CRLF = "\n";
     private static String INDENT = "    ";
 
-    private File sourceImage;
-    private ViewCalculator viewData;
-    private String snippet;
-    private File targetFile;
+    private Optional<String> snippet = Optional.empty();
 
-    private PanoSnippetGenerator(File sourceImage, ViewCalculator viewData) {
-        this.sourceImage = sourceImage;
-        this.viewData = viewData;
+    private PanoSnippetGenerator() {
     }
 
-    public static PanoSnippetGenerator of(File sourceImage) throws IOException, ImageProcessingException {
-        return new PanoSnippetGenerator(sourceImage, ViewCalculator.of(sourceImage));
+    public static PanoSnippetGenerator of() {
+        return new PanoSnippetGenerator();
     }
 
-    public static PanoSnippetGenerator of(File sourceImage, ViewCalculator viewData) {
-        return new PanoSnippetGenerator(sourceImage, viewData);
+    public PanoSnippetGenerator renderSnippet(File sourceImage) throws NoDataException, IOException, ImageProcessingException {
+        return renderSnippet(ViewCalculator.of(sourceImage));
+
     }
 
-    public PanoSnippetGenerator renderSippet() {
-        snippet = generateSnippet(viewData);
+    public PanoSnippetGenerator renderSnippet(ViewCalculator viewData) throws NoDataException {
+        return renderSnippet(viewData.createPanoView());
+    }
+
+    public PanoSnippetGenerator renderSnippet(Optional<ViewCalculator.PanoView> panoView) throws NoDataException {
+        snippet = generateSnippet(panoView);
         return this;
     }
 
-    public PanoSnippetGenerator storeInFile() throws IOException {
-        String targetFileName = FilenameUtils.removeExtension(sourceImage.getName() + "_snippet.txt");
-        targetFile = new File(sourceImage.getParentFile(), targetFileName);
-        FileUtils.write(targetFile, snippet, StandardCharsets.UTF_8);
+    public PanoSnippetGenerator storeInFile(File targetFile) throws IOException, NoDataException {
+        if (snippet.isPresent()) {
+            FileUtils.write(targetFile, snippet.get(), StandardCharsets.UTF_8);
+        } else {
+            throw new NoDataException();
+        }
         return this;
     }
 
-    public PanoSnippetGenerator storeInFile(File targetFile) throws IOException {
-        FileUtils.write(targetFile, snippet, StandardCharsets.UTF_8);
-        return this;
-    }
-
-    public String getSnippet() {
+    public Optional<String> getSnippet() {
         return snippet;
     }
 
-    public File getTargetFile() {
-        return targetFile;
-    }
+    private Optional<String> generateSnippet(Optional<ViewCalculator.PanoView> panoView) throws NoDataException {
+        return panoView.map(v -> {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("<krpano version=\"1.18\" showerrors=\"false\">").append(CRLF);
+            sb.append(CRLF);
+            sb.append("<view").append(CRLF);
+            sb.append(makeArg("limitview", "range"));
 
-    protected String generateSnippet(ViewCalculator viewData) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<krpano version=\"1.18\" showerrors=\"false\">").append(CRLF);
-        sb.append(CRLF);
-        sb.append("<view").append(CRLF);
-        sb.append(makeArg("limitview", "range"));
+            sb.append(makeArg("hlookatmin", Double.toString(180d - v.getFovX1())));
+            sb.append(makeArg("hlookatmax", Double.toString(180d - v.getFovX2())));
 
-        sb.append(makeArg("hlookatmin", Double.toString(viewData.getFovX1() )));
-        sb.append(makeArg("hlookatmax", Double.toString(viewData.getFovX2() )));
+            // TODO why it has to be negative? something is wrong but result is ok
+            sb.append(makeArg("vlookatmin", Double.toString(90d - v.getFovY1())));
+            sb.append(makeArg("vlookatmax", Double.toString(90d - v.getFovY2())));
 
-        // TODO why it has to be negative? something is wrong but result is ok
-        sb.append(makeArg("vlookatmin", Double.toString(-viewData.getFovY1() )));
-        sb.append(makeArg("vlookatmax", Double.toString(-viewData.getFovY2() )));
-
-        sb.append(makeArg("hlookat", "0"));
-        sb.append(makeArg("vlookat", "0"));
-        sb.append(makeArg("maxpixelzoom", "2.0"));
-        sb.append(makeArg("fovmax", "150"));
-        sb.append("/>");
-        return sb.toString();
+            sb.append(makeArg("hlookat", "0"));
+            sb.append(makeArg("vlookat", "0"));
+            sb.append(makeArg("maxpixelzoom", "2.0"));
+            sb.append(makeArg("fovmax", "150"));
+            sb.append("/>");
+            return Optional.of(sb.toString());
+        }).orElseThrow(() -> new NoDataException("No PanoView available"));
     }
 
     private String makeArg(String name, String arg) {

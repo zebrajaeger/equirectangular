@@ -22,17 +22,6 @@ package de.zebrajaeger.equirectangular.ui;
  * #L%
  */
 
-import de.zebrajaeger.equirectangular.core.common.FileUtils;
-import de.zebrajaeger.equirectangular.core.common.PanoNameUtils;
-import de.zebrajaeger.equirectangular.core.common.ZipUtils;
-import de.zebrajaeger.equirectangular.core.EquirectagularConverter;
-import de.zebrajaeger.equirectangular.core.panosnippet.PanoSnippetGenerator;
-import de.zebrajaeger.equirectangular.core.panosnippet.ViewRange;
-import de.zebrajaeger.equirectangular.core.psdpreview.PreviewGenerator;
-import de.zebrajaeger.equirectangular.core.imgremove.PanoTilesCleaner;
-import de.zebrajaeger.equirectangular.core.krpano.Config;
-import de.zebrajaeger.equirectangular.core.krpano.KrPanoConfigFile;
-import de.zebrajaeger.equirectangular.core.krpano.KrPanoExecutor;
 import org.xml.sax.SAXException;
 
 import javax.swing.JButton;
@@ -45,7 +34,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

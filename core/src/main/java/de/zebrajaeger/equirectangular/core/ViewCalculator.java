@@ -7,6 +7,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ViewCalculator {
@@ -144,6 +145,16 @@ public class ViewCalculator {
         return new ViewCalculator(image.getWidth(), image.getHeight());
     }
 
+    public Optional<PanoView> createPanoView() {
+        PanoView result = null;
+        if (fovX1 != null && fovX2 != null && fovY1 != null && fovY2 != null) {
+            double lookAtX = (fovX1 + fovX2) / 2;
+            double lookAtY = (fovY1 + fovY2) / 2;
+            result = new PanoView(fovX1 - 180d, fovX2 - 180d, fovY1 - 90d, fovY2 - 90d, lookAtX - 180d, lookAtY - 90d);
+        }
+        return Optional.ofNullable(result);
+    }
+
     public int getSourceWidth() {
         return sourceWidth;
     }
@@ -220,12 +231,12 @@ public class ViewCalculator {
         if (targetHeight == null || fovYOffset == null) {
             return null;
         }
-        return (long)((double) targetHeight * fovYOffset / 180d);
+        return (long) ((double) targetHeight * fovYOffset / 180d);
     }
 
     public void getFovYOffsetPx(Consumer<Long> consumer) {
         if (targetHeight != null && fovYOffset != null) {
-            consumer.accept((long)((double) targetHeight * fovYOffset / 180d));
+            consumer.accept((long) ((double) targetHeight * fovYOffset / 180d));
         }
     }
 
@@ -258,4 +269,50 @@ public class ViewCalculator {
         return ReflectionToStringBuilder.toString(this);
     }
 
+    public static class PanoView {
+        private double fovX1;
+        private double fovX2;
+        private double fovY1;
+        private double fovY2;
+        private double lookAtX;
+        private double lookAtY;
+
+        public PanoView(double fovX1, double fovX2, double fovY1, double fovY2, double lookAtX, double lookAtY) {
+            this.fovX1 = fovX1;
+            this.fovX2 = fovX2;
+            this.fovY1 = fovY1;
+            this.fovY2 = fovY2;
+            this.lookAtX = lookAtX;
+            this.lookAtY = lookAtY;
+        }
+
+        public double getFovX1() {
+            return fovX1;
+        }
+
+        public double getFovX2() {
+            return fovX2;
+        }
+
+        public double getFovY1() {
+            return fovY1;
+        }
+
+        public double getFovY2() {
+            return fovY2;
+        }
+
+        public double getLookAtX() {
+            return lookAtX;
+        }
+
+        public double getLookAtY() {
+            return lookAtY;
+        }
+
+        @Override
+        public String toString() {
+            return ReflectionToStringBuilder.toString(this);
+        }
+    }
 }

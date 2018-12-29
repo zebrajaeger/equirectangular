@@ -23,6 +23,8 @@ package de.zebrajaeger.equirectangular.core.common;
  */
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +38,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipUtils {
 
-    // TODO log inseat sout
+    private static final Logger LOG = LoggerFactory.getLogger(ZipUtils.class);
 
     public static void compressDirectory(File pSource, File zipFile, String zipBaseDir) throws IOException {
         try (ZipOutputStream zipStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
@@ -54,7 +56,7 @@ public class ZipUtils {
         for (File f : pSource.listFiles()) {
             String zipName = (zipDir.isEmpty()) ? f.getName() : zipDir + File.separator + f.getName();
             if (f.isFile()) {
-                System.out.println("Add File:      '" + f.getAbsolutePath() + "' as '" + zipName + "'");
+                LOG.info("Add File: '{}' as '{}'", f.getAbsolutePath(), zipName);
                 ZipEntry entry = new ZipEntry(zipName);
                 zipStream.putNextEntry(entry);
 
@@ -62,7 +64,7 @@ public class ZipUtils {
                     IOUtils.copy(in, zipStream);
                 }
             } else if (f.isDirectory()) {
-                System.out.println("Add Directory: '" + f.getAbsolutePath() + "'");
+                LOG.info("Add Directory: '{}'", f.getAbsolutePath(), zipName);
                 compressDirectory(f, zipName, zipStream);
             }
         }

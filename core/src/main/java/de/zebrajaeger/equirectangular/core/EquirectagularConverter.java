@@ -50,12 +50,12 @@ public class EquirectagularConverter {
     private ViewCalculator viewData;
 
     private Consumer<Progress> progressConsumer;
-    private boolean overwriteExistingImage = false;
+//    private boolean overwriteExistingImage = false;
 
     private boolean dontAddTopAndBottomBorder = false;
 
-    private String equirectangularImageFilePostfix = "_equirectangular";
-    private File targetImage;
+//    private String equirectangularImageFilePostfix = "_equirectangular";
+//    private File targetImage;
 
     public static EquirectagularConverter of(File sourceImage) throws IOException, ImageProcessingException {
         return of(sourceImage, ViewCalculator.of(sourceImage));
@@ -70,60 +70,60 @@ public class EquirectagularConverter {
         this.viewData = viewData;
     }
 
-    public EquirectagularConverter overwriteExistingImage(boolean overwriteExistingImage) {
-        this.overwriteExistingImage = overwriteExistingImage;
-        return this;
-    }
+//    public EquirectagularConverter overwriteExistingImage(boolean overwriteExistingImage) {
+//        this.overwriteExistingImage = overwriteExistingImage;
+//        return this;
+//    }
 
     public EquirectagularConverter dontAddTopAndBottomBorder(boolean dontAddTopAndBottomBorder) {
         this.dontAddTopAndBottomBorder = dontAddTopAndBottomBorder;
         return this;
     }
 
-    public EquirectagularConverter equirectangularImageFilePostfix(String equirectangularImageFilePostfix) {
-        this.equirectangularImageFilePostfix = equirectangularImageFilePostfix;
-        return this;
-    }
+//    public EquirectagularConverter equirectangularImageFilePostfix(String equirectangularImageFilePostfix) {
+//        this.equirectangularImageFilePostfix = equirectangularImageFilePostfix;
+//        return this;
+//    }
 
     public EquirectagularConverter progressConsumer(Consumer<Progress> progressConsumer) {
         this.progressConsumer = progressConsumer;
         return this;
     }
 
-    public File getTargetImage() {
-        return targetImage;
-    }
+//    public File getTargetImage() {
+//        return targetImage;
+//    }
 
-    public EquirectagularConverter renderEquirectangularImage() throws IOException {
-        String name = FilenameUtils.removeExtension(sourceImageFile.getName())
-                + equirectangularImageFilePostfix
-                + "."
-                + FilenameUtils.getExtension(sourceImageFile.getName());
-        return renderEquirectangularImage(new File(sourceImageFile.getParentFile(), name));
-    }
+//    public EquirectagularConverter renderEquirectangularImage() throws IOException {
+//        String name = FilenameUtils.removeExtension(sourceImageFile.getName())
+//                + equirectangularImageFilePostfix
+//                + "."
+//                + FilenameUtils.getExtension(sourceImageFile.getName());
+//        return renderEquirectangularImage(new File(sourceImageFile.getParentFile(), name));
+//    }
 
     public EquirectagularConverter renderEquirectangularImage(File targetImage) throws IOException {
-        this.targetImage = targetImage;
+//        this.targetImage = targetImage;
 
-        if (targetImage.exists()) {
-            if (overwriteExistingImage) {
-                LOG.info("Euirectangular image already exists, overwrite: '{}'", targetImage.getAbsolutePath());
-            } else {
-                LOG.info("Euirectangular image already exists, skip: '{}'", targetImage.getAbsolutePath());
-                return this;
-            }
-        }
+//        if (targetImage.exists()) {
+//            if (overwriteExistingImage) {
+//                LOG.info("Euirectangular image already exists, overwrite: '{}'", targetImage.getAbsolutePath());
+//            } else {
+//                LOG.info("Euirectangular image already exists, skip: '{}'", targetImage.getAbsolutePath());
+//                return this;
+//            }
+//        }
+//
+//        if (targetImage.exists()) {
+//            targetImage.delete();
+//        }
 
-        if (targetImage.exists()) {
-            targetImage.delete();
-        }
-
-        renderEquirectangularImage_();
+        renderEquirectangularImage_(targetImage);
 
         return this;
     }
 
-    private void renderEquirectangularImage_() throws IOException {
+    private void renderEquirectangularImage_(File targetImage) throws IOException {
         ReadablePsdImage source = ReadablePsdImage.of(sourceImageFile);
 
         LineReader lineReader = source.getLineReader();
@@ -209,13 +209,15 @@ public class EquirectagularConverter {
         }
     }
 
-    public static class Progress {
+    public static class Progress implements ProgressSource {
         long lines;
         long currentLine;
+        int percent;
 
         public Progress(long lines, long currentLine) {
             this.lines = lines;
             this.currentLine = currentLine;
+            this.percent = (int) (100 * lines / currentLine);
         }
 
         public long getLines() {
@@ -226,12 +228,8 @@ public class EquirectagularConverter {
             return currentLine;
         }
 
-        public int getPercentAsInt() {
-            return (int) (100 * currentLine / lines);
-        }
-
-        public double getPercen() {
-            return (100d * (double) currentLine / (double) lines);
+        public int getPercent() {
+            return percent;
         }
 
         @Override

@@ -47,7 +47,7 @@ public class KrPanoExecutor {
     private File krPanoExe;
     private File krPanoConfig;
 
-    private boolean deleteIfPanoFolderExists = false;
+//    private boolean deleteIfPanoFolderExists = false;
 
     private long renderTimeout = 2 * 3600; // 2h
     private Type type = Type.SPHERE;
@@ -83,10 +83,10 @@ public class KrPanoExecutor {
         return this;
     }
 
-    public KrPanoExecutor deleteIfPanoFolderExists(boolean deleteIfPanoFolderExists) {
-        this.deleteIfPanoFolderExists = deleteIfPanoFolderExists;
-        return this;
-    }
+//    public KrPanoExecutor deleteIfPanoFolderExists(boolean deleteIfPanoFolderExists) {
+//        this.deleteIfPanoFolderExists = deleteIfPanoFolderExists;
+//        return this;
+//    }
 
     public KrPanoExecutor hFov(Double hFov) {
         this.hFov = hFov;
@@ -153,15 +153,15 @@ public class KrPanoExecutor {
             throw new RuntimeException("Only Windows is supported");
         }
 
-        if(targetFolder.exists()){
-            if(deleteIfPanoFolderExists) {
-                LOG.info("pano directory already exist. Delete: '{}'", targetFolder.getAbsolutePath());
-                FileUtils.deleteDirectory(targetFolder);
-            }else{
-                LOG.info("pano directory already exist. Skip krpano execution: '{}'", targetFolder.getAbsolutePath());
-                return;
-            }
-        }
+//        if(targetFolder.exists()){
+//            if(deleteIfPanoFolderExists) {
+//                LOG.info("pano directory already exist. Delete: '{}'", targetFolder.getAbsolutePath());
+//                FileUtils.deleteDirectory(targetFolder);
+//            }else{
+//                LOG.info("pano directory already exist. Skip krpano execution: '{}'", targetFolder.getAbsolutePath());
+//                return;
+//            }
+//        }
         targetFolder.mkdirs();
 
         List<String> cmdList = new LinkedList(Arrays.asList(new String[]{
