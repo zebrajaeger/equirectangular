@@ -291,7 +291,8 @@ public class PanoMojo extends AbstractMojo {
                     if (projection != null) {
                         projection = projection.toLowerCase();
 
-                        if ("equirectangular".equals(projection)) {
+                        // TODO implement other than spherical
+                        if ("equirectangular".equals(projection) || "spherical".equals(projection)) {
                             type = KrPanoExecutor.Type.SPHERE;
                         }
                     }

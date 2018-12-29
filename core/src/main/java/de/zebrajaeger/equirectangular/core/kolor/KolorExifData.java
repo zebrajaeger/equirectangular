@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,16 +60,37 @@ public class KolorExifData {
     }
 
     public static Optional<KolorExifData> of(Metadata metadata) {
-        String data = null;
+        List<String> results = new LinkedList<>();
         for (Directory d : metadata.getDirectories()) {
             for (Tag t : d.getTags()) {
-                if ("Exif SubIFD".equals(d.getName()) && "User Comment".equals(t.getTagName())) {
-                    data = t.getDescription();
+                //if ("Exif SubIFD".equals(d.getName()) && "User Comment".equals(t.getTagName())) {
+                if ("User Comment".equals(t.getTagName())) {
+                    results.add(t.getDescription());
                 }
             }
         }
 
-        return of(data);
+        for (String s : results) {
+            Optional<KolorExifData> of = of(s);
+            if (of.isPresent() && of.get().isPopulated()) {
+                return of;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private boolean isPopulated() {
+        return pictures != null
+                || width != null
+                || height != null
+                || lens != null
+                || rms != null
+                || fovX != null
+                || fovY != null
+                || fovYOffset != null
+                || projection != null
+                || color != null;
     }
 
     public static Optional<KolorExifData> of(String exif) {
@@ -142,6 +165,7 @@ public class KolorExifData {
 
         return Optional.of(result);
     }
+
     private static double asDouble(Matcher matcher, int groupIndex) {
         return Double.parseDouble(matcher.group(groupIndex));
     }
@@ -198,5 +222,4 @@ public class KolorExifData {
     public String toString() {
         return ReflectionToStringBuilder.toString(this);
     }
-
 }
