@@ -82,9 +82,9 @@ public class PanoMojo extends AbstractMojo {
     private boolean overwritePanoIfExists;
     @Parameter(property = "panoTargetFolder", defaultValue = "${project.build.directory}")
     private File panoTargetFolder;
-    @Parameter(property = "krPanoExe")
+    @Parameter(property = "krPanoExe", defaultValue = "${krpano.exe}")
     private File krPanoExe;
-    @Parameter(property = "krPanoConfig")
+    @Parameter(property = "krPanoConfig", defaultValue = "${krpano.config}")
     private File krPanoConfig;
     @Parameter(property = "krPanoRenderTimeout", defaultValue = "7200")
     private long krPanoRenderTimeout;
