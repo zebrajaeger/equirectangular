@@ -10,12 +10,12 @@ package de.zebrajaeger.equirectangular.core.psdimage;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -26,16 +26,19 @@ import de.zebrajaeger.equirectangular.core.psdimage.linereader.LineReader;
 import de.zebrajaeger.equirectangular.core.psdimage.linereader.RLELineReader;
 import de.zebrajaeger.equirectangular.core.psdimage.linereader.RawLineReader;
 
-import java.io.*;
+import javax.imageio.stream.FileImageInputStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * A psd image that can be ridden from a file
  * <p>
+ *
  * @author Lars Brandt on 13.05.2016.
  */
 public class ReadablePsdImage extends PsdImage {
     private File file;
-    private DecoratedInputStream inputStream = null;
+    private FileImageInputStream inputStream = null;
     private LineReader lineReader;
     private long[] compressionLineSizes;
 
@@ -58,9 +61,9 @@ public class ReadablePsdImage extends PsdImage {
         this.file = file;
     }
 
-    public void open() throws FileNotFoundException {
+    public void open() throws IOException {
         if (inputStream == null) {
-            inputStream = new DecoratedInputStream(new BufferedInputStream(new FileInputStream(file), 1024 * 1024));
+            inputStream = new FileImageInputStream(file);
         } else {
             throw new IllegalStateException("already opened");
         }
@@ -83,21 +86,24 @@ public class ReadablePsdImage extends PsdImage {
     }
 
     public void readHeader() throws IOException {
-        DecoratedInputStream is = getInputStream();
+        FileImageInputStream is = getInputStream();
 
-        setId(is.readString(4));
+        // header
+        setId(PsdUtils.readCString(is, 4));
         setVersion(is.readShort());
-        setReserved(is.readBytes(6));
+        is.skipBytes(6);
         setChannels(is.readShort());
         setHeight(is.readInt());
         setWidth(is.readInt());
         setDepth(is.readShort());
         setColorMode(is.readShort());
 
+        // color data
         setColorDataSize(is.readInt());
         is.skipBytes(getColorDataSize());
 
-        int size = (int) is.readInt();
+        // resource section(s)
+        int size = is.readInt();
         byte[] resourceSection = new byte[size];
         is.read(resourceSection);
         setResources(new ResourceSection(resourceSection));
@@ -105,20 +111,27 @@ public class ReadablePsdImage extends PsdImage {
         //setResources(new ResourceSection());
         //getResources().read(is);
 
+        // layer mask data
         if (isPSB()) {
+            // TODO maybe a bug in autopano giga?????
+            // the specification
+            // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_pgfId-1031423
+            // says: PSB images sizes is 8Byte and PSD 4Byte
             setLayerMaskSize(is.readLong());
+            //setLayerMaskSize(is.readInt());
         } else {
             setLayerMaskSize(is.readInt());
         }
         is.skipBytes(getLayerMaskSize());
 
+        // imageDataStart
         setCompression(is.readShort());
 
         if (getCompression() == 0) {
-            lineReader = new RawLineReader(getInputStream(), (int) getWidth());
+            lineReader = new RawLineReader(getInputStream(), getWidth());
         } else if (getCompression() == 1) {
-            compressionLineSizes = is.readInts((int) (getChannels() * getHeight()));
-            lineReader = new RLELineReader(getInputStream(), (int) getWidth());
+            compressionLineSizes = PsdUtils.readInts(is, (getChannels() * getHeight()));
+            lineReader = new RLELineReader(getInputStream(), getWidth());
         } else {
             lineReader = null;
         }
@@ -128,24 +141,11 @@ public class ReadablePsdImage extends PsdImage {
         return file;
     }
 
-    public DecoratedInputStream getInputStream() {
+    public FileImageInputStream getInputStream() {
         return inputStream;
     }
 
     public LineReader getLineReader() {
         return lineReader;
-    }
-
-    public long getExpectedSize() {
-        long result = 0;
-        if (compressionLineSizes != null) {
-            for (long s : compressionLineSizes) {
-                result += s;
-            }
-        } else {
-            result = getWidth() * getHeight() * getChannels();
-        }
-
-        return result;
     }
 }

@@ -58,7 +58,7 @@ public class KrPanoExecutor {
     private String jpegsubsamp = "422";
     private Boolean jpegoptimize = false;
 
-    private String tilePath = "tiles/[c/]l%Al[_c]_%Av_%Ah.jpg";
+    private String tilePath = "tiles/[c/]l%Al/%Av/l%Al[_c]_%Av_%Ah.jpg";
     private String previewPath = "tiles/preview.jpg";
     private String xmlPath = "pano.xml";
     private String htmlPath = "index.html";

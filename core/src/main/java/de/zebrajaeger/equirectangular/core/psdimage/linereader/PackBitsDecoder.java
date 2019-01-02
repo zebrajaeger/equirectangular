@@ -10,12 +10,12 @@ package de.zebrajaeger.equirectangular.core.psdimage.linereader;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -50,9 +50,9 @@ package de.zebrajaeger.equirectangular.core.psdimage.linereader;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.imageio.stream.FileImageInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -137,7 +137,7 @@ public final class PackBitsDecoder {
      * @return The number of bytes decoded
      * @throws java.io.IOException
      */
-    public DecodeResult decode(final InputStream stream, final ByteBuffer buffer) throws IOException {
+    public DecodeResult decode(final FileImageInputStream stream, final ByteBuffer buffer) throws IOException {
         int inputCount = 0;
         if (reachedEOF) {
             return new DecodeResult(0, 0);
@@ -198,7 +198,7 @@ public final class PackBitsDecoder {
         return new DecodeResult(inputCount, buffer.position());
     }
 
-    static byte readByte(final InputStream pStream) throws IOException {
+    static byte readByte(final FileImageInputStream pStream) throws IOException {
         int read = pStream.read();
 
         if (read < 0) {
@@ -208,7 +208,7 @@ public final class PackBitsDecoder {
         return (byte) read;
     }
 
-    static int readFully(final InputStream pStream, final ByteBuffer pBuffer, final int pLength) throws IOException {
+    static int readFully(final FileImageInputStream pStream, final ByteBuffer pBuffer, final int pLength) throws IOException {
         if (pLength < 0) {
             throw new IndexOutOfBoundsException(String.format("Negative length: %d", pLength));
         }

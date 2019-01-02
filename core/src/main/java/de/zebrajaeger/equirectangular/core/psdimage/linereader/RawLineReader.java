@@ -24,6 +24,7 @@ package de.zebrajaeger.equirectangular.core.psdimage.linereader;
 
 import de.zebrajaeger.equirectangular.core.psdimage.DecoratedInputStream;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -32,7 +33,7 @@ import java.nio.ByteBuffer;
  */
 public class RawLineReader extends LineReader {
 
-    public RawLineReader(DecoratedInputStream inputStream, int lineSize) {
+    public RawLineReader(FileImageInputStream inputStream, int lineSize) {
         super(inputStream, lineSize);
     }
 

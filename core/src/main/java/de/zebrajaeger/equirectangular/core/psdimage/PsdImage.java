@@ -35,7 +35,6 @@ public class PsdImage {
 
     private String id = "8BPS";
     private int version = 2;
-    private byte[] reserved = new byte[6];
     private int channels = 4;
     private long height;
     private long width;
@@ -52,7 +51,6 @@ public class PsdImage {
     public void readValuesFrom(PsdImage o) {
         id = o.id;
         version = o.version;
-        reserved = o.reserved.clone();
         channels = o.channels;
         height = o.height;
         width = o.width;
@@ -88,10 +86,6 @@ public class PsdImage {
         return version;
     }
 
-    public byte[] getReserved() {
-        return reserved;
-    }
-
     public int getChannels() {
         return channels;
     }
@@ -122,10 +116,6 @@ public class PsdImage {
 
     public void setVersion(int version) {
         this.version = version;
-    }
-
-    public void setReserved(byte[] reserved) {
-        this.reserved = reserved;
     }
 
     public void setChannels(int channels) {

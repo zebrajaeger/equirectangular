@@ -26,6 +26,7 @@ import de.zebrajaeger.equirectangular.core.ProgressSource;
 import de.zebrajaeger.equirectangular.core.psdimage.ReadablePsdImage;
 import de.zebrajaeger.equirectangular.core.psdimage.linereader.LineReader;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +122,6 @@ public class PreviewGenerator {
         LOG.info("Create Target Structure " + targetW + " x " + targetH);
         ScaledPreviewData target = new ScaledPreviewData(width, height, (int) targetW, (int) targetH);
 
-        int index = 0;
         long lines = height * Math.max(3, source.getChannels());
         long currentLine = 0;
 
@@ -131,11 +131,10 @@ public class PreviewGenerator {
             for (int y = 0; y < height; ++y) {
                 lineReader.readLine(line);
 
-                LOG.debug("R({}) Available: {}", index++, lineReader.getInputStream().available());
                 for (int x = 0; x < width; ++x) {
                     target.addToR(x, y, rawLine[x] & 0xff);
                 }
-                emitProgres(Color.R,lines,++currentLine);
+                emitProgres(Color.R, lines, ++currentLine);
             }
         }
 
@@ -143,22 +142,20 @@ public class PreviewGenerator {
         if (source.getChannels() > 1) {
             for (int y = 0; y < height; ++y) {
                 lineReader.readLine(line);
-                LOG.debug("G({}) Available: {}", index++, lineReader.getInputStream().available());
                 for (int x = 0; x < width; ++x) {
                     target.addToG(x, y, rawLine[x] & 0xff);
                 }
-                emitProgres(Color.G,lines,++currentLine);
+                emitProgres(Color.G, lines, ++currentLine);
             }
         }
         LOG.info("Copy Data B");
         if (source.getChannels() > 2) {
             for (int y = 0; y < height; ++y) {
                 lineReader.readLine(line);
-                LOG.debug("B({}) Available: {}", index++, lineReader.getInputStream().available());
                 for (int x = 0; x < width; ++x) {
                     target.addToB(x, y, rawLine[x] & 0xff);
                 }
-                emitProgres(Color.B,lines,++currentLine);
+                emitProgres(Color.B, lines, ++currentLine);
             }
         }
         /*
@@ -228,7 +225,7 @@ public class PreviewGenerator {
 
         @Override
         public String toString() {
-            return ReflectionToStringBuilder.toString(this);
+            return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
         }
     }
 }

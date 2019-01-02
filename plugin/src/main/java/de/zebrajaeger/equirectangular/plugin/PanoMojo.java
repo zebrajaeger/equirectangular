@@ -119,6 +119,7 @@ public class PanoMojo extends AbstractMojo {
     private void handleSourceImage(File sourceImage) throws MojoExecutionException {
         // TODO if a step run, all the following steps have to be executed
         ViewCalculator viewCalculator = createViewCalculator(sourceImage);
+        getLog().info("ViewCalculator: " + viewCalculator);
 
         // snippet
         Optional<File> snippetFile = generateSnippet(

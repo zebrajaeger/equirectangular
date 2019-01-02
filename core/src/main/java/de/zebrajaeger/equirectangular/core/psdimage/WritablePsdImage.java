@@ -60,7 +60,7 @@ public class WritablePsdImage extends PsdImage {
     public void writeHeader() throws IOException {
         outputStream.writeString(getId());
         outputStream.writeUnsignedShort(getVersion());
-        outputStream.writeBytes(getReserved());
+        outputStream.writeBytes(new byte[6]);
         outputStream.writeUnsignedShort(getChannels());
         outputStream.writeUnsignedInt(getHeight());
         outputStream.writeUnsignedInt(getWidth());

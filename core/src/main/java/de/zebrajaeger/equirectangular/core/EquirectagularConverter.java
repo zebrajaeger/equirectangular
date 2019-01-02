@@ -27,7 +27,8 @@ import de.zebrajaeger.equirectangular.core.psdimage.ReadablePsdImage;
 import de.zebrajaeger.equirectangular.core.psdimage.WritablePsdImage;
 import de.zebrajaeger.equirectangular.core.psdimage.linereader.LineReader;
 import de.zebrajaeger.equirectangular.core.psdimage.linewriter.LineWriter;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,12 +136,12 @@ public class EquirectagularConverter {
 
         // compute V Border size (top,bottom)
         long topBorderLines = viewData.getBorderTop();
-        long imageLines  = source.getHeight();
-        long bottomBorderLines = viewData.getBorderTop();
+        long imageLines = source.getHeight();
+        long bottomBorderLines = viewData.getBorderBottom();
 
-        if(dontAddTopAndBottomBorder){
+        if (dontAddTopAndBottomBorder) {
             Long offset = viewData.getFovYOffsetPx();
-            if(offset!=null) {
+            if (offset != null) {
                 if (offset >= 0) {
                     topBorderLines = offset;
                     bottomBorderLines = 0;
@@ -178,7 +179,7 @@ public class EquirectagularConverter {
             for (long i = 0; i < topBorderLines; ++i) {
                 ++currentLine;
                 lineWriter.writeLine(writeBuffer);
-                emitProgress(linesToWrite, currentLine);
+                emitProgress(State.BORDER_TOP, linesToWrite, currentLine);
             }
 
             // copy content
@@ -188,7 +189,7 @@ public class EquirectagularConverter {
                 Arrays.fill(writeBuffer.array(), (byte) 0);
                 System.arraycopy(readBuffer.array(), 0, writeBuffer.array(), viewData.getBorderLeftAsInteger(), readBuffer.array().length);
                 lineWriter.writeLine(writeBuffer);
-                emitProgress(linesToWrite, currentLine);
+                emitProgress(State.IMAGE, linesToWrite, currentLine);
             }
 
             // write bottom margin
@@ -196,28 +197,34 @@ public class EquirectagularConverter {
             for (long i = 0; i < bottomBorderLines; ++i) {
                 ++currentLine;
                 lineWriter.writeLine(writeBuffer);
-                emitProgress(linesToWrite, currentLine);
+                emitProgress(State.BORDER_BOTTOM, linesToWrite, currentLine);
             }
         }
         destination.close();
         source.close();
     }
 
-    private void emitProgress(long lines, long currentLine) {
+    private void emitProgress(State state, long lines, long currentLine) {
         if (progressConsumer != null) {
-            progressConsumer.accept(new Progress(lines, currentLine));
+            progressConsumer.accept(new Progress(state, lines, currentLine));
         }
     }
 
-    public static class Progress implements ProgressSource {
-        long lines;
-        long currentLine;
-        int percent;
+    public static enum State {
+        BORDER_TOP, IMAGE, BORDER_BOTTOM
+    }
 
-        public Progress(long lines, long currentLine) {
+    public static class Progress implements ProgressSource {
+        private State state;
+        private long lines;
+        private long currentLine;
+        private int percent;
+
+        public Progress(State state, long lines, long currentLine) {
+            this.state = state;
             this.lines = lines;
             this.currentLine = currentLine;
-            this.percent = (int) (100 * lines / currentLine);
+            this.percent = (int) (100 * currentLine / lines);
         }
 
         public long getLines() {
@@ -228,17 +235,17 @@ public class EquirectagularConverter {
             return currentLine;
         }
 
+        public State getState() {
+            return state;
+        }
+
         public int getPercent() {
             return percent;
         }
 
         @Override
         public String toString() {
-            return "Progress{"
-                    + "lines=" + lines
-                    + ", currentLine=" + currentLine
-                    + ", percent=" + (100 * currentLine / lines)
-                    + '}';
+            return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
         }
     }
 }

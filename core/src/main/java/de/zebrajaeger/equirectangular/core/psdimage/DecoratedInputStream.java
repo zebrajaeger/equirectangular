@@ -10,12 +10,12 @@ package de.zebrajaeger.equirectangular.core.psdimage;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,6 +28,7 @@ import java.io.InputStream;
 /**
  * this decorates an input stream with some helper methods to read different data types
  * <p>
+ *
  * @author Lars Brandt on 08.05.2016.
  */
 public class DecoratedInputStream {
@@ -66,11 +67,22 @@ public class DecoratedInputStream {
     }
 
     public long readInt() throws IOException {
-        return ((((((
-                (0x0ff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read());
+        int[] values = new int[4];
+        long result = 0;
+        for (int i = 0; i < 4; ++i) {
+            int v = inputStream.read();
+            values[i] = v;
+
+            result <<= 8;
+            result |= (0xff & v);
+        }
+        return result;
+
+//        return ((((((
+//                (0x0ff & inputStream.read()) << 8)
+//                | 0xff & inputStream.read()) << 8)
+//                | 0xff & inputStream.read()) << 8)
+//                | 0xff & inputStream.read());
     }
 
     public long[] readInts(int length) throws IOException {
@@ -81,17 +93,26 @@ public class DecoratedInputStream {
         return buf;
     }
 
-
     public long readLong() throws IOException {
-        return ((((((((((((((
-                (0x0ff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read()) << 8)
-                | 0xff & inputStream.read());
+        int[] values = new int[8];
+        long result = 0;
+        for (int i = 0; i < 8; ++i) {
+            int v = inputStream.read();
+            values[i] = v;
+
+            result <<= 8;
+            result |= (0xff & v);
+        }
+        return result;
+//        return ((((((((((((((
+//                (0x0ff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read()) << 8)
+//                | 0xff & (long)inputStream.read());
     }
 
     public String readString(int length) throws IOException {

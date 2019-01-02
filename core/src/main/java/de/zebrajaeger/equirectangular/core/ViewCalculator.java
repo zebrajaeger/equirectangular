@@ -4,6 +4,7 @@ import com.drew.imaging.ImageProcessingException;
 import de.zebrajaeger.equirectangular.core.kolor.KolorExifData;
 import de.zebrajaeger.equirectangular.core.psdimage.ReadablePsdImage;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +74,13 @@ public class ViewCalculator {
                     Double fovY = exifData.getFovY();
                     if (fovY != null) {
                         result.targetHeight = (long) ((result.sourceHeight * 180d) / fovY);
+                    }
+                }
+
+                // now, (targetWidth/2) == targetHeight ! isn't it? -> change height and hopefully that's right...
+                if (result.targetWidth != null && result.targetHeight != null) {
+                    if (result.targetWidth / 2 != result.targetHeight) {
+                        result.targetHeight = result.targetWidth / 2;
                     }
                 }
 
@@ -312,7 +320,7 @@ public class ViewCalculator {
 
         @Override
         public String toString() {
-            return ReflectionToStringBuilder.toString(this);
+            return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 }
