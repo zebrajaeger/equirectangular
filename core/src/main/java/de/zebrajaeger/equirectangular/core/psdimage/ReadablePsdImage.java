@@ -113,12 +113,7 @@ public class ReadablePsdImage extends PsdImage {
 
         // layer mask data
         if (isPSB()) {
-            // TODO maybe a bug in autopano giga?????
-            // the specification
-            // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_pgfId-1031423
-            // says: PSB images sizes is 8Byte and PSD 4Byte
             setLayerMaskSize(is.readLong());
-            //setLayerMaskSize(is.readInt());
         } else {
             setLayerMaskSize(is.readInt());
         }
